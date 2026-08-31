@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PPL Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#EDEAE0;--card:#FFFFFF;--border:#D8D4C4;--text:#211F1A;--muted:#7A7668;
+  --push:#8B3A2E;--pull:#3D5C4A;--legs:#5C6B3E;--core:#4A473E;
+  --push-bg:#F2E4DF;--pull-bg:#E5EBE3;--legs-bg:#E8ECDA;
+  --accent:#211F1A;--gold:#8C7A3E;
+}
+body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:30.5px}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* HEADER */
+.hdr{background:var(--accent);padding:16px;display:flex;align-items:center;gap:12px}
+.hdr-back{color:#fff;font-size:31.2px;cursor:pointer;padding:4px 8px;margin:-4px -4px -4px -8px}
+.hdr-title{color:#fff;font-size:26.5px;font-weight:600;flex:1}
+.hdr-sub{color:#aaa;font-size:17.2px;font-family:'Courier New',monospace;letter-spacing:0.05em}
+
+/* HOME */
+.home-hero{background:var(--accent);padding:24px 16px 32px;text-align:center}
+.home-logo{color:#fff;font-size:43.7px;font-weight:700;letter-spacing:-0.02em}
+.home-tagline{color:#888;font-size:17.2px;letter-spacing:0.15em;text-transform:uppercase;font-family:'Courier New',monospace;margin-top:4px}
+
+/* TAB BAR */
+.tab-bar{display:flex;background:#fff;border-bottom:1.5px solid var(--border)}
+.tab-btn{flex:1;text-align:center;padding:14px 8px;font-size:18.7px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* HISTORY FILTER */
+.history-filter-row{display:flex;gap:8px;flex-wrap:wrap}
+.filter-chip{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:8px 16px;font-size:16.6px;color:var(--muted);cursor:pointer;font-family:'Courier New',monospace}
+.filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* HISTORY LIST */
+.hist-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px;cursor:pointer}
+.hist-item:active{background:#F0EDE4}
+.hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.hist-session-tag{font-size:14.4px;font-weight:700;padding:3px 10px;border-radius:12px;color:#fff}
+.hist-tag-a{background:var(--push)}
+.hist-tag-b{background:var(--pull)}
+.hist-tag-c{background:var(--legs)}
+.hist-date{font-size:15.6px;color:var(--muted);font-family:'Courier New',monospace}
+.hist-gym{font-size:15.6px;color:var(--text);font-weight:500;margin-top:2px}
+.hist-count{font-size:14.4px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
+
+/* HISTORY DETAIL */
+.hist-detail-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.hist-detail-ex{font-size:19px;font-weight:700;margin-bottom:6px}
+.hist-detail-sets{font-size:16.6px;color:var(--text);font-family:'Courier New',monospace;line-height:1.8}
+.hist-detail-comment{margin-top:8px;padding:8px 10px;background:var(--push-bg);border-left:3px solid var(--push);border-radius:4px;font-size:16px;color:#5c2e22;font-style:italic}
+
+.section{padding:16px}
+.section-title{font-size:17.2px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:10px}
+
+/* GYM SELECTOR */
+.gym-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gym-card{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;transition:all 0.15s;position:relative}
+.gym-card.active{border-color:var(--accent);background:#F0F0F8}
+.gym-card.coming-soon{opacity:0.5;cursor:not-allowed}
+.gym-name{font-size:21.8px;font-weight:600;margin-bottom:2px}
+.gym-loc{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace}
+.gym-unit{font-size:15.6px;color:var(--muted);margin-top:6px;font-family:'Courier New',monospace}
+.gym-badge{position:absolute;top:8px;right:8px;font-size:14px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:10px;font-family:'Courier New',monospace}
+.gym-soon{position:absolute;top:8px;right:8px;font-size:14px;background:#ddd;color:#888;padding:2px 6px;border-radius:10px;font-family:'Courier New',monospace}
+
+/* SESSION SELECTOR */
+.session-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.session-btn{border:none;border-radius:10px;padding:18px 8px;cursor:pointer;text-align:center;font-size:20.3px;font-weight:600;letter-spacing:0.03em;transition:all 0.15s}
+.session-btn.a{background:var(--push-bg);color:var(--push);border:1.5px solid var(--push)}
+.session-btn.b{background:var(--pull-bg);color:var(--pull);border:1.5px solid var(--pull)}
+.session-btn.c{background:var(--legs-bg);color:var(--legs);border:1.5px solid var(--legs)}
+.session-label{font-size:15.6px;font-family:'Courier New',monospace;margin-top:4px;opacity:0.8}
+
+/* RECENT */
+.recent-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.recent-name{font-size:20.3px;font-weight:500}
+.recent-date{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace}
+.recent-gym{font-size:15.6px;color:var(--muted);margin-top:2px}
+
+/* SESSION SCREEN */
+.session-hdr-bar{padding:10px 16px;font-size:17.2px;font-family:'Courier New',monospace;letter-spacing:0.08em;text-transform:uppercase;color:#fff}
+.hdr-a{background:var(--push)}.hdr-b{background:var(--pull)}.hdr-c{background:var(--legs)}
+
+.ex-list{padding:12px;flex:1;overflow-y:auto}
+
+.ex-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.ex-head{display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer}
+.ex-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17.2px;font-weight:700;flex-shrink:0}
+.num-a{background:var(--push-bg);color:var(--push);border:1.5px solid var(--push)}
+.num-b{background:var(--pull-bg);color:var(--pull);border:1.5px solid var(--pull)}
+.num-c{background:var(--legs-bg);color:var(--legs);border:1.5px solid var(--legs)}
+.num-core{background:#f0f0f0;color:#555;border:1.5px solid #ccc}
+.ex-info{flex:1}
+.ex-name{font-size:21.8px;font-weight:600}
+.ex-target{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
+.ex-last{font-size:15.6px;color:#b0aca4;font-family:'Courier New',monospace;margin-top:2px}
+.ex-status{font-size:17.2px;font-family:'Courier New',monospace;flex-shrink:0}
+.ex-done{color:var(--legs)}
+.chevron{color:#bbb;font-size:17.2px;transition:transform 0.2s;flex-shrink:0}
+
+.ex-body{display:none;border-top:1px solid var(--border);padding:12px;background:#FAFAF8}
+.ex-body.open{display:block}
+
+.cue-box{font-size:17.2px;color:#3D3A32;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.55;margin-bottom:14px;padding:12px 14px;background:#F7F5EE;border:1.5px solid #D8D0BA;border-left:4px solid var(--gold);border-radius:8px}
+
+/* SET LOGGING */
+.sets-hdr{display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:8px;margin-bottom:6px}
+.sets-hdr-lbl{font-size:15.6px;color:var(--muted);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:0.08em}
+.set-row{display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:8px;margin-bottom:6px;align-items:center}
+.set-num{font-size:18.7px;font-weight:700;color:var(--muted);font-family:'Courier New',monospace;text-align:center}
+.set-input{border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:23.4px;width:100%;text-align:center;background:#fff;color:var(--text);-webkit-appearance:none}
+.set-input:focus{border-color:var(--accent);outline:none}
+.set-input.logged{background:#EEF5E6;border-color:var(--legs)}
+.set-log-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px;font-size:18.7px;font-weight:600;cursor:pointer;width:100%}
+.set-log-btn.done{background:var(--legs)}
+
+.add-set-btn{background:none;border:1.5px dashed var(--border);border-radius:6px;padding:8px;width:100%;font-size:18.7px;color:var(--muted);cursor:pointer;margin-top:4px;font-family:'Courier New',monospace}
+
+.next-target{margin-top:10px;padding:8px 10px;background:var(--pull-bg);border-radius:6px;font-size:17.2px;color:var(--pull);font-family:'Courier New',monospace}
+.next-target strong{font-weight:600}
+.comment-label{font-size:14.4px;color:var(--muted);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:0.05em;margin-top:10px;margin-bottom:4px}
+.comment-box{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:16.6px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--text);background:#fff;resize:vertical;-webkit-appearance:none}
+.comment-box:focus{border-color:var(--accent);outline:none}
+
+/* FINISH BTN */
+.finish-bar{padding:16px;background:var(--bg);border-top:1px solid var(--border)}
+.finish-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:16px;font-size:25px;font-weight:600;cursor:pointer;letter-spacing:0.02em}
+
+/* COMPLETE SCREEN */
+.complete-hero{background:var(--legs);padding:40px 16px;text-align:center}
+.complete-icon{font-size:74.9px;margin-bottom:8px}
+.complete-title{color:#fff;font-size:37.4px;font-weight:700}
+.complete-sub{color:rgba(255,255,255,0.8);font-size:20.3px;margin-top:4px;font-family:'Courier New',monospace}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;padding:12px}
+.summary-ex{font-size:20.3px;font-weight:600;margin-bottom:4px}
+.summary-sets{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace;line-height:1.8}
+.next-session-card{background:var(--pull-bg);border:1.5px solid var(--pull);border-radius:10px;padding:14px;margin-bottom:8px}
+.next-session-title{font-size:18.7px;font-weight:700;color:var(--pull);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.next-row{display:flex;justify-content:space-between;font-size:18.7px;font-family:'Courier New',monospace;padding:3px 0;border-bottom:1px solid rgba(42,111,176,0.1)}
+.next-row:last-child{border-bottom:none}
+.next-ex-name{color:var(--text);flex:1}
+.next-ex-target{color:var(--pull);font-weight:600}
+
+.home-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:14px;font-size:23.4px;font-weight:600;cursor:pointer;margin-top:8px}
+.copy-btn{width:100%;background:var(--legs);color:#fff;border:none;border-radius:10px;padding:14px;font-size:20px;font-weight:600;cursor:pointer;margin-top:16px}
+.copy-btn.copied{background:var(--gold)}
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="screen-home" class="screen active">
+  <div class="home-hero">
+    <div class="home-logo">PPL Tracker</div>
+    <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab-btn active" id="tab-home" onclick="switchTab('home')">🏠 Home</div>
+    <div class="tab-btn" id="tab-history" onclick="switchTab('history')">📖 History</div>
+  </div>
+
+  <div id="home-tab-content">
+  <div class="section">
+    <div class="section-title">Gym Location</div>
+    <div class="gym-grid">
+      <div class="gym-card" id="gym-rivercreek" onclick="selectGym('rivercreek')">
+        <div class="gym-name">River Creek</div>
+        <div class="gym-loc">Estero, Florida</div>
+        <div class="gym-unit">weights in lbs</div>
+        <div class="gym-badge">Active</div>
+      </div>
+      <div class="gym-card" id="gym-mandalay" onclick="selectGym('mandalay')">
+        <div class="gym-name">Mandalay</div>
+        <div class="gym-loc">United Kingdom</div>
+        <div class="gym-unit">weights in kg</div>
+      </div>
+      <div class="gym-card coming-soon" style="grid-column:span 1">
+        <div class="gym-name">Treez</div>
+        <div class="gym-loc">Coming soon</div>
+        <div class="gym-unit">—</div>
+        <div class="gym-soon">Soon</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Start Session</div>
+    <div class="session-grid">
+      <button class="session-btn a" onclick="startSession('A')">
+        A<div class="session-label">Push</div>
+      </button>
+      <button class="session-btn b" onclick="startSession('B')">
+        B<div class="session-label">Pull</div>
+      </button>
+      <button class="session-btn c" onclick="startSession('C')">
+        C<div class="session-label">Legs</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recent Sessions</div>
+    <div id="recent-list"><div style="font-size:12px;color:var(--muted);font-family:'Courier New',monospace">No sessions logged yet.</div></div>
+  </div>
+  </div>
+
+  <div id="history-tab-content" style="display:none">
+    <div class="section">
+      <div class="section-title">Filter by Gym</div>
+      <div class="history-filter-row">
+        <button class="filter-chip active" id="filter-all" onclick="filterHistory('all')">All</button>
+        <button class="filter-chip" id="filter-rivercreek" onclick="filterHistory('rivercreek')">River Creek</button>
+        <button class="filter-chip" id="filter-mandalay" onclick="filterHistory('mandalay')">Mandalay</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">All Sessions</div>
+      <div id="history-full-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY DETAIL SCREEN -->
+<div id="screen-history-detail" class="screen">
+  <div class="hdr">
+    <div class="hdr-back" onclick="showScreen('home')">←</div>
+    <div>
+      <div class="hdr-title" id="hist-detail-title">Session</div>
+      <div class="hdr-sub" id="hist-detail-sub"></div>
+    </div>
+  </div>
+  <div class="section" id="hist-detail-body"></div>
+</div>
+
+<!-- SESSION SCREEN -->
+<div id="screen-session" class="screen">
+  <div class="hdr">
+    <div class="hdr-back" onclick="goHome()">←</div>
+    <div>
+      <div class="hdr-title" id="session-title">Session A — Push</div>
+      <div class="hdr-sub" id="session-sub">River Creek · lbs</div>
+    </div>
+  </div>
+  <div class="session-hdr-bar" id="session-hdr-bar">Chest · Shoulders · Triceps</div>
+  <div class="ex-list" id="ex-list"></div>
+  <div class="finish-bar">
+    <button class="finish-btn" onclick="finishSession()">Complete Session →</button>
+  </div>
+</div>
+
+<!-- COMPLETE SCREEN -->
+<div id="screen-complete" class="screen">
+  <div class="complete-hero">
+    <div class="complete-icon">💪</div>
+    <div class="complete-title" id="complete-title">Session Complete!</div>
+    <div class="complete-sub" id="complete-sub">Great work</div>
+  </div>
+  <div class="section">
+    <div class="section-title">Session Summary</div>
+    <div id="summary-list"></div>
+    <div class="section-title" style="margin-top:16px">Next Session Targets</div>
+    <div class="next-session-card">
+      <div class="next-session-title">📋 Targets for Next Time</div>
+      <div id="next-targets-list"></div>
+    </div>
+    <button class="copy-btn" id="copy-btn" onclick="copyResults()">📋 Copy Results to Paste in Chat</button>
+    <button class="home-btn" onclick="goHome()">← Back to Home</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+var currentGym = 'rivercreek';
+var currentSession = 'A';
+var sessionData = {};
+var lastCompletedSession = null;
+var sessionHistory = [];
+function safeGet(key) {
+  try { return localStorage.getItem(key); } catch(e) { return null; }
+}
+function safeSet(key, val) {
+  try { localStorage.setItem(key, val); } catch(e) { /* storage unavailable, continue in-memory */ }
+}
+try {
+  sessionHistory = JSON.parse(safeGet('ppl_history') || '[]');
+  if (!Array.isArray(sessionHistory)) sessionHistory = [];
+} catch(e) {
+  sessionHistory = [];
+}
+
+var GYMS = {
+  rivercreek: { name: 'River Creek', loc: 'Estero, Florida', unit: 'lbs', smith: 10 },
+  mandalay: { name: 'Mandalay', loc: 'United Kingdom', unit: 'kg', smith: 17 },
+  trees: { name: 'Treez', loc: 'Coming soon', unit: 'kg', smith: 20 }
+};
+
+var SESSIONS = {
+  A: {
+    label: 'Push',
+    sub: 'Chest \u00b7 Shoulders \u00b7 Triceps',
+    color: 'a',
+    exercises: [
+      { id:'bench', name:'Smith bench press', target:'105 lbs \u00d7 3\u00d78', last:'100 lbs \u00d7 8,10,8', cue:'5\u201310\u00b0 incline \u00b7 retract scapula \u00b7 elbows 45\u201360\u00b0 \u00b7 drive bar \u00b7 rest 2\u20133 min', targetKg:'25 kg ea (67 kg) \u00d7 4\u00d78', lastKg:'22.5 kg ea \u00d7 4\u00d78 (7,8 hard)', tW:105, tR:8, tWkg:25, tRkg:8 },
+      { id:'incline', name:'Incline DB press', target:'30 lbs ea \u00d7 3\u00d712', last:'30 lbs \u00d7 10,10,12 (last shaky)', cue:'30\u201345\u00b0 \u00b7 3-sec eccentric \u00b7 elbows slightly flared \u00b7 neutral wrist', targetKg:'21.5 kg ea \u00d7 3\u00d710', lastKg:'20.5 kg ea \u00d7 3\u00d710', tW:30, tR:12, tWkg:21.5, tRkg:10 },
+      { id:'chestpress', name:'Palladium chest press', target:'95 lbs \u00d7 3\u00d710', last:'90 lbs \u00d7 3\u00d710', cue:'Seat 4\u20135 \u00b7 full range \u00b7 squeeze at top \u00b7 controlled return', targetKg:'Smith press \u2014 est. baseline', lastKg:'\u2014', tW:95, tR:10, tWkg:null, tRkg:null },
+      { id:'fly', name:'Cable pec fly', target:'18 lbs \u00d7 3\u00d710', last:'14\u00d712, 14\u00d712, 18\u00d712 (hard)', cue:'Mid cable \u00b7 slight bend in elbows \u00b7 squeeze at centre \u00b7 slow arc \u00b7 stop if shoulder >2/10', targetKg:'3 plates \u00d7 3\u00d712', lastKg:'3 plates \u00d7 3\u00d710 (hard 7\u201310)', tW:18, tR:10, tWkg:3, tRkg:12 },
+      { id:'ohp', name:'Overhead press', target:'Bar + 25 lbs ea \u00d7 3\u00d710', last:'bar+20\u00d710, bar+25\u00d710\u00d72', cue:'Brace core \u00b7 bar path straight up \u00b7 lock out at top \u00b7 monitor shoulder', targetKg:'Bar + 2.5 kg ea (25 kg) \u00d7 3\u00d78', lastKg:'25 kg \u00d7 3\u00d78 (3.75 ea too heavy)', tW:25, tR:10, tWkg:25, tRkg:8 },
+      { id:'lateral', name:'Cable lateral raise', target:'12 lbs \u00d7 3\u00d712', last:'12 lbs \u00d7 3\u00d710', cue:'Slight forward lean \u00b7 elbow leads \u00b7 don\'t shrug \u00b7 stop if shoulder pain', targetKg:'7.5 kg \u00d7 3\u00d712', lastKg:'7.5 kg \u00d7 3\u00d710 (10 kg too hard)', tW:12, tR:12, tWkg:7.5, tRkg:12 },
+      { id:'tricep', name:'Cable tricep pushdown', target:'50 lbs \u00d7 3\u00d710', last:'42\u00d710, 46\u00d710, 50\u00d710, 50\u00d77', cue:'Elbows pinned \u00b7 full extension \u00b7 1-sec squeeze \u00b7 rope for neutral wrist', targetKg:'8 plates \u00d7 4\u00d710', lastKg:'7 plates \u00d7 4\u00d710', tW:50, tR:10, tWkg:8, tRkg:10 },
+      { id:'skull', name:'DB skull crusher', target:'20 lbs ea \u00d7 3\u00d710', last:'15\u00d710, 20\u00d710, 20\u00d710', cue:'Lower to temples \u00b7 elbows vertical \u00b7 upper arms still \u00b7 2-sec eccentric', targetKg:'12.5 kg ea \u00d7 3\u00d710', lastKg:'12.5 kg ea \u00d7 3\u00d710 (last 2 hard)', tW:20, tR:10, tWkg:12.5, tRkg:10 },
+    ]
+  },
+  B: {
+    label: 'Pull',
+    sub: 'Back \u00b7 Biceps \u00b7 Rear Delts',
+    color: 'b',
+    exercises: [
+      { id:'row', name:'Barbell bent-over row', target:'140 lbs (65 ea) \u00d7 3\u00d78', last:'45ea\u00d710, 55ea\u00d78, 65ea\u00d79', cue:'Hip hinge 45\u00b0 \u00b7 brace core \u00b7 drive elbows to hips \u00b7 pause at top \u00b7 2-sec eccentric \u00b7 rest 2\u20133 min', targetKg:'62.5 kg \u00d7 4\u00d78', lastKg:'60 kg \u00d7 4\u00d78', tW:140, tR:8, tWkg:62.5, tRkg:8 },
+      { id:'latpull', name:'Lat pulldown', target:'150 lbs \u00d7 3\u00d710', last:'150\u00d76, 145\u00d78, 145\u00d710, 150\u00d710', cue:'Pull to upper chest \u00b7 lean back 10\u00b0 \u00b7 initiate with lat not bicep \u00b7 2-sec return', targetKg:'140 kg (Marcy) \u00d7 4\u00d710', lastKg:'130 kg \u00d7 4\u00d710', tW:150, tR:10, tWkg:140, tRkg:10 },
+      { id:'seatedrow', name:'Seated cable row', target:'140 lbs \u00d7 3\u00d710', last:'135 lbs \u00d7 3\u00d710', cue:'Sit tall \u00b7 pull to lower sternum \u00b7 squeeze shoulder blades \u00b7 2-sec return', targetKg:'12 plates \u00d7 4\u00d712 (max)', lastKg:'12 plates \u00d7 4\u00d710', tW:140, tR:10, tWkg:12, tRkg:12 },
+      { id:'singlerow', name:'Single-arm cable row', target:'70 lbs \u00d7 3\u00d710', last:'50 warm, 65\u00d710 \u00d7 3', cue:'Stagger stance \u00b7 slight rotation at bottom \u00b7 elbow to hip \u00b7 pause and squeeze \u00b7 2-sec return', targetKg:'36 kg \u00d7 3\u00d710', lastKg:'34 kg \u00d7 3\u00d710', tW:70, tR:10, tWkg:36, tRkg:10 },
+      { id:'reardelt', name:'Rear delt fly', target:'45 lbs \u00d7 4\u00d712', last:'40\u00d710, 45\u00d712 \u00d7 3', cue:'Arms almost straight \u00b7 pull apart leading with elbows \u00b7 squeeze rear delts \u00b7 slow return', targetKg:'3 plates \u00d7 4\u00d712', lastKg:'2 plates \u00d7 4\u00d715', tW:45, tR:12, tWkg:3, tRkg:12 },
+      { id:'facepull', name:'Cable face pull', target:'54 lbs \u00d7 3\u00d715', last:'50 lbs \u00d7 3\u00d715', cue:'Rope at face height \u00b7 pull to forehead \u00b7 elbows flare high \u00b7 external rotation \u00b7 monitor click', targetKg:'6 plates \u00d7 4\u00d715', lastKg:'5 plates \u00d7 4\u00d715', tW:54, tR:15, tWkg:6, tRkg:15 },
+      { id:'curl', name:'DB curl supinated', target:'25 lbs ea \u00d7 3\u00d78 (retest)', last:'20 lbs \u00d7 3\u00d710', cue:'Elbow pinned \u00b7 supinate fully at top \u00b7 2-sec eccentric \u00b7 no swing', targetKg:'12.5 kg ea \u00d7 4\u00d78', lastKg:'11.5 kg ea \u00d7 4\u00d78', tW:25, tR:8, tWkg:12.5, tRkg:8 },
+      { id:'hammer', name:'Cable hammer curl', target:'25 lbs \u00d7 3\u00d712', last:'25\u00d710, 25\u00d712 \u00d7 2', cue:'Neutral grip \u00b7 curl to chin \u00b7 controlled descent \u00b7 both arms or alternate', targetKg:'8 plates \u00d7 4\u00d712', lastKg:'7 plates \u00d7 4\u00d712', tW:25, tR:12, tWkg:8, tRkg:12 },
+    ]
+  },
+  C: {
+    label: 'Legs + Core',
+    sub: 'Quads \u00b7 Hamstrings \u00b7 Glutes \u00b7 Core',
+    color: 'c',
+    exercises: [
+      { id:'squat', name:'Smith machine squat', target:'120 lbs \u00d7 3\u00d78', last:'Skipped \u2014 rack busy', cue:'Face stack side \u00b7 high bar \u00b7 360\u00b0 brace \u00b7 knees track toes \u00b7 parallel depth \u00b7 rest 2\u20133 min', targetKg:'69.5 kg \u00d7 4\u00d78', lastKg:'67 kg \u00d7 4\u00d78', tW:120, tR:8, tWkg:69.5, tRkg:8 },
+      { id:'rdl', name:'Romanian deadlift', target:'145 lbs \u00d7 3\u00d78', last:'Skipped \u2014 rack busy', cue:'Face AWAY from stack \u00b7 hip hinge \u00b7 soft knee \u00b7 bar close to legs \u00b7 2-sec eccentric', targetKg:'85 kg \u00d7 4\u00d78', lastKg:'80 kg \u00d7 3\u00d78', tW:145, tR:8, tWkg:85, tRkg:8 },
+      { id:'legpress', name:'Leg press (plate loaded)', target:'70 lbs ea \u00d7 3\u00d710', last:'45ea\u00d710, 65ea\u00d710, 65ea\u00d76', cue:'Sled \u2248 90 lbs \u00b7 feet shoulder-width mid-platform \u00b7 full depth \u00b7 don\'t lock out at top', targetKg:'Spanish squat \u2014 Strongway low cable', lastKg:'\u2014', tW:70, tR:10, tWkg:null, tRkg:null },
+      { id:'legext', name:'Leg extension', target:'125 lbs \u00d7 3\u00d712', last:'110\u00d710, 115\u00d710, 120\u00d710, 120\u00d78', cue:'Seat 2\u20133 \u00b7 full extension at top \u00b7 2-sec eccentric \u00b7 don\'t slam down', targetKg:'50 kg \u00d7 4\u00d712', lastKg:'50 kg \u00d7 4\u00d710', tW:125, tR:12, tWkg:50, tRkg:12 },
+      { id:'legcurl', name:'Seated leg curl', target:'105 lbs \u00d7 3\u00d712', last:'90\u00d712, 95\u00d712, 100\u00d712', cue:'Seat 2\u20133 \u00b7 full range \u00b7 curl heel to glute \u00b7 2-sec eccentric', targetKg:'31.25 kg \u00d7 3\u00d78', lastKg:'30 kg \u00d7 3\u00d78', tW:105, tR:12, tWkg:31.25, tRkg:8 },
+      { id:'bulg', name:'Bulgarian split squat', target:'30 lbs ea \u00d7 3\u00d710', last:'25 lbs ea \u00d7 3\u00d710', cue:'Rear foot on bench \u00b7 shin vertical at bottom \u00b7 drop straight down \u00b7 drive through heel', targetKg:'18 kg ea \u00d7 3\u00d710', lastKg:'17 kg ea \u00d7 3\u00d710', tW:30, tR:10, tWkg:18, tRkg:10 },
+      { id:'kickback', name:'Cable glute kickback', target:'22 lbs \u00d7 3\u00d715 ea', last:'Skipped \u2014 no ankle cuff', cue:'FT-900 stack: 6/10/14/18/22/26/30/34/38/42/46/50 \u00b7 hinge slightly \u00b7 kick back and up \u00b7 squeeze glute', targetKg:'3 plates \u00d7 3\u00d715 ea', lastKg:'3 plates \u00d7 3\u00d712', tW:22, tR:15, tWkg:3, tRkg:15 },
+      { id:'crunch', name:'Ab crunch', target:'150 lbs \u00d7 3\u00d715', last:'140\u00d712, 145\u00d712, 145\u00d722', cue:'Round spine fully \u00b7 chin to chest \u00b7 squeeze at bottom \u00b7 slow return \u00b7 no momentum', targetKg:'8 plates \u00d7 4\u00d712', lastKg:'7 plates \u00d7 4\u00d712', tW:150, tR:15, tWkg:8, tRkg:12 },
+      { id:'rotation', name:'Cable torso rotation', target:'30 lbs \u00d7 3\u00d715 ea', last:'26 lbs \u00d7 3\u00d715', cue:'Stand side-on \u00b7 arms extended \u00b7 rotate through thoracic spine \u00b7 controlled return', targetKg:'4 plates \u00d7 4\u00d715', lastKg:'3 plates \u00d7 4\u00d715', tW:30, tR:15, tWkg:4, tRkg:15 },
+    ]
+  }
+};
+
+// ============================================================
+// GYM SELECTION
+// ============================================================
+function selectGym(gym) {
+  currentGym = gym;
+  document.querySelectorAll('.gym-card').forEach(function(c){ c.classList.remove('active'); });
+  document.getElementById('gym-'+gym).classList.add('active');
+}
+selectGym('rivercreek');
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goHome() {
+  showScreen('home');
+  renderRecent();
+}
+
+// ============================================================
+// START SESSION
+// ============================================================
+function startSession(sess) {
+  currentSession = sess;
+  sessionData = {};
+  var gym = GYMS[currentGym];
+  var s = SESSIONS[sess];
+  var isKg = currentGym !== 'rivercreek';
+
+  document.getElementById('session-title').textContent = 'Session ' + sess + ' — ' + s.label;
+  document.getElementById('session-sub').textContent = gym.name + ' · ' + gym.unit;
+  var bar = document.getElementById('session-hdr-bar');
+  bar.textContent = s.sub;
+  bar.className = 'session-hdr-bar hdr-' + s.color;
+
+  renderExercises(sess, isKg);
+  showScreen('session');
+}
+
+function renderExercises(sess, isKg) {
+  var s = SESSIONS[sess];
+  var el = document.getElementById('ex-list');
+  el.innerHTML = '';
+
+  s.exercises.forEach(function(ex, i) {
+    var target = isKg ? ex.targetKg : ex.target;
+    var last = isKg ? (ex.lastKg || '\u2014') : (ex.last || '\u2014');
+    var numClass = 'num-' + (i >= s.exercises.length - 2 && sess === 'C' ? 'core' : s.color);
+    
+    var card = document.createElement('div');
+    card.className = 'ex-card';
+    card.id = 'ex-card-' + ex.id;
+    card.innerHTML = `
+      <div class="ex-head" onclick="toggleEx('${ex.id}')">
+        <div class="ex-num ${numClass}">${i+1}</div>
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-target">${target}</div>
+          <div class="ex-last">last: ${last}</div>
+        </div>
+        <div class="ex-status" id="status-${ex.id}"></div>
+        <div class="chevron" id="chev-${ex.id}">▼</div>
+      </div>
+      <div class="ex-body" id="body-${ex.id}">
+        <div class="cue-box">${ex.cue}</div>
+        <div class="sets-hdr">
+          <div class="sets-hdr-lbl" style="text-align:center">Set</div>
+          <div class="sets-hdr-lbl" style="text-align:center">Weight</div>
+          <div class="sets-hdr-lbl" style="text-align:center">Reps</div>
+          <div></div>
+        </div>
+        <div id="sets-${ex.id}"></div>
+        <button class="add-set-btn" onclick="addSet('${ex.id}')">+ Add set</button>
+        <div class="comment-label">Notes / difficulty</div>
+        <textarea class="comment-box" id="comment-${ex.id}" placeholder="e.g. left shoulder shaky on last 2 reps..." rows="2" oninput="saveComment('${ex.id}')"></textarea>
+        <div class="next-target" id="nexttarget-${ex.id}" style="display:none"></div>
+      </div>
+    `;
+    el.appendChild(card);
+    var tW = isKg ? ex.tWkg : ex.tW;
+    var tR = isKg ? ex.tRkg : ex.tR;
+    sessionData[ex.id] = { sets: [], name: ex.name, target: target, tW: tW, tR: tR };
+    addSet(ex.id, tW, tR);
+    addSet(ex.id, tW, tR);
+    addSet(ex.id, tW, tR);
+  });
+}
+
+function toggleEx(id) {
+  var body = document.getElementById('body-'+id);
+  var chev = document.getElementById('chev-'+id);
+  body.classList.toggle('open');
+  chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+function saveComment(id) {
+  var val = document.getElementById('comment-'+id).value;
+  if (!sessionData[id]) sessionData[id] = { sets: [] };
+  sessionData[id].comment = val;
+}
+
+function addSet(id, prefillW, prefillR) {
+  var container = document.getElementById('sets-'+id);
+  var setNum = container.children.length + 1;
+  var row = document.createElement('div');
+  row.className = 'set-row';
+  row.id = 'set-'+id+'-'+setNum;
+  var wVal = (prefillW !== undefined && prefillW !== null) ? prefillW : '';
+  var rVal = (prefillR !== undefined && prefillR !== null) ? prefillR : '';
+  row.innerHTML = `
+    <div class="set-num">${setNum}</div>
+    <input class="set-input" type="number" placeholder="wt" id="w-${id}-${setNum}" inputmode="decimal" value="${wVal}">
+    <input class="set-input" type="number" placeholder="reps" id="r-${id}-${setNum}" inputmode="numeric" value="${rVal}">
+    <button class="set-log-btn" onclick="logSet('${id}',${setNum})">Log</button>
+  `;
+  container.appendChild(row);
+}
+
+function logSet(id, setNum) {
+  var w = document.getElementById('w-'+id+'-'+setNum).value;
+  var r = document.getElementById('r-'+id+'-'+setNum).value;
+  if (!w || !r) { alert('Enter weight and reps'); return; }
+  
+  document.getElementById('w-'+id+'-'+setNum).classList.add('logged');
+  document.getElementById('r-'+id+'-'+setNum).classList.add('logged');
+  var btn = document.querySelector('#set-'+id+'-'+setNum+' .set-log-btn');
+  btn.textContent = '✓';
+  btn.classList.add('done');
+  btn.disabled = true;
+
+  if (!sessionData[id]) sessionData[id] = { sets: [] };
+  sessionData[id].sets.push({ set: setNum, weight: parseFloat(w), reps: parseInt(r) });
+
+  // Update status
+  var count = sessionData[id].sets.length;
+  document.getElementById('status-'+id).textContent = count + ' sets ✓';
+  document.getElementById('status-'+id).style.color = 'var(--legs)';
+
+  // Calculate next target
+  updateNextTarget(id);
+}
+
+function updateNextTarget(id) {
+  var sets = sessionData[id].sets;
+  if (sets.length === 0) return;
+  var lastWeight = sets[sets.length-1].weight;
+  var avgReps = sets.reduce(function(a,b){ return a+b.reps; },0) / sets.length;
+  var unit = currentGym === 'rivercreek' ? 'lbs' : 'kg';
+  var increment = currentGym === 'rivercreek' ? 5 : 1.25;
+  var nextW = avgReps >= 10 ? lastWeight + increment : lastWeight;
+  var suggestion = avgReps >= 10 ? 'Increase to ' + nextW + ' ' + unit : 'Stay at ' + lastWeight + ' ' + unit + ' — chase reps';
+  var nt = document.getElementById('nexttarget-'+id);
+  nt.style.display = 'block';
+  nt.innerHTML = '<strong>Next session:</strong> ' + suggestion;
+}
+
+// ============================================================
+// FINISH SESSION
+// ============================================================
+function finishSession() {
+ try {
+  var gym = GYMS[currentGym];
+  var sess = SESSIONS[currentSession];
+  var date = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+  lastCompletedSession = { gym: gym, sess: sess, gymKey: currentGym, sessionKey: currentSession, date: date };
+
+  // Save to history
+  var record = {
+    session: currentSession,
+    gym: currentGym,
+    gymName: gym.name,
+    date: date,
+    timestamp: Date.now(),
+    label: sess.label,
+    data: JSON.parse(JSON.stringify(sessionData))
+  };
+  sessionHistory.unshift(record);
+  if (sessionHistory.length > 30) sessionHistory = sessionHistory.slice(0,30);
+  safeSet('ppl_history', JSON.stringify(sessionHistory));
+
+  // Render complete screen
+  document.getElementById('complete-title').textContent = 'Session ' + currentSession + ' Complete!';
+  document.getElementById('complete-sub').textContent = gym.name + ' \u00b7 ' + date;
+
+  var summaryEl = document.getElementById('summary-list');
+  summaryEl.innerHTML = '';
+  var nextEl = document.getElementById('next-targets-list');
+  nextEl.innerHTML = '';
+
+  var unit = currentGym === 'rivercreek' ? 'lbs' : 'kg';
+  var increment = currentGym === 'rivercreek' ? 5 : 1.25;
+
+  sess.exercises.forEach(function(ex) {
+    var d = sessionData[ex.id];
+    if (!d || !d.sets || d.sets.length === 0) return;
+
+    var validSets = d.sets.filter(function(st){ return !isNaN(st.weight) && !isNaN(st.reps); });
+    if (validSets.length === 0) return;
+
+    // Summary
+    var card = document.createElement('div');
+    card.className = 'summary-card';
+    var setsText = validSets.map(function(st){ return st.weight+unit+'\u00d7'+st.reps; }).join(' \u00b7 ');
+    card.innerHTML = '<div class="summary-ex">'+ex.name+'</div><div class="summary-sets">'+setsText+'</div>';
+    summaryEl.appendChild(card);
+
+    // Next target
+    var lastW = validSets[validSets.length-1].weight;
+    var avgReps = validSets.reduce(function(a,b){ return a+b.reps; },0) / validSets.length;
+    var nextW = avgReps >= 10 ? lastW + increment : lastW;
+    var action = avgReps >= 10 ? '\u2191 ' + nextW + ' ' + unit : '\u2192 ' + lastW + ' ' + unit;
+    var row = document.createElement('div');
+    row.className = 'next-row';
+    row.innerHTML = '<div class="next-ex-name">'+ex.name+'</div><div class="next-ex-target">'+action+'</div>';
+    nextEl.appendChild(row);
+  });
+
+  showScreen('complete');
+ } catch(err) {
+  alert('Could not complete session: ' + err.message);
+  console.error(err);
+ }
+}
+
+// ============================================================
+// RECENT SESSIONS
+// ============================================================
+// ============================================================
+// COPY RESULTS
+// ============================================================
+function copyResults() {
+  if (!lastCompletedSession) return;
+  var gym = lastCompletedSession.gym;
+  var sess = lastCompletedSession.sess;
+  var sessionKey = lastCompletedSession.sessionKey;
+  var isKg = lastCompletedSession.gymKey !== 'rivercreek';
+  var unit = isKg ? 'kg' : 'lbs';
+
+  var lines = [];
+  lines.push(gym.name + ' \u00b7 Session ' + sessionKey + ' \u2014 ' + sess.label + ' \u00b7 ' + lastCompletedSession.date);
+  lines.push('');
+
+  sess.exercises.forEach(function(ex, i) {
+    var d = sessionData[ex.id];
+    if (!d || !d.sets || d.sets.length === 0) return;
+    var validSets = d.sets.filter(function(st){ return !isNaN(st.weight) && !isNaN(st.reps); });
+    if (validSets.length === 0) return;
+
+    var setsText = validSets.map(function(st){ return st.weight+unit+'\u00d7'+st.reps; }).join(', ');
+    var line = (i+1) + ' ' + ex.name + ': ' + setsText;
+    if (d.comment && d.comment.trim()) {
+      line += ' \u2014 ' + d.comment.trim();
+    }
+    lines.push(line);
+  });
+
+  var text = lines.join('\n');
+
+  var btn = document.getElementById('copy-btn');
+  function markCopied() {
+    btn.textContent = '\u2713 Copied! Paste in chat now';
+    btn.classList.add('copied');
+    setTimeout(function(){
+      btn.textContent = '\ud83d\udccb Copy Results to Paste in Chat';
+      btn.classList.remove('copied');
+    }, 2500);
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(function(){
+      fallbackCopy(text, markCopied);
+    });
+  } else {
+    fallbackCopy(text, markCopied);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    cb();
+  } catch(e) {
+    alert('Copy failed \u2014 you can select and copy the summary above manually.');
+  }
+}
+
+function renderRecent() {
+  var el = document.getElementById('recent-list');
+  if (sessionHistory.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);font-family:\'Courier New\',monospace">No sessions logged yet.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  sessionHistory.slice(0,5).forEach(function(h) {
+    var item = document.createElement('div');
+    item.className = 'recent-item';
+    var count = Object.values(h.data).filter(function(d){ return d.sets && d.sets.length > 0; }).length;
+    item.innerHTML = `
+      <div>
+        <div class="recent-name">Session ${h.session} — ${h.label}</div>
+        <div class="recent-gym">${h.gymName} · ${count} exercises</div>
+      </div>
+      <div class="recent-date">${h.date}</div>
+    `;
+    el.appendChild(item);
+  });
+}
+renderRecent();
+
+// ============================================================
+// TAB SWITCHING (Home / History)
+// ============================================================
+var currentHistoryFilter = 'all';
+
+function switchTab(tab) {
+  document.getElementById('tab-home').classList.toggle('active', tab === 'home');
+  document.getElementById('tab-history').classList.toggle('active', tab === 'history');
+  document.getElementById('home-tab-content').style.display = tab === 'home' ? '' : 'none';
+  document.getElementById('history-tab-content').style.display = tab === 'history' ? '' : 'none';
+  if (tab === 'history') renderFullHistory();
+}
+
+function filterHistory(gymKey) {
+  currentHistoryFilter = gymKey;
+  ['all','rivercreek','mandalay'].forEach(function(k){
+    document.getElementById('filter-'+k).classList.toggle('active', k === gymKey);
+  });
+  renderFullHistory();
+}
+
+function renderFullHistory() {
+  var el = document.getElementById('history-full-list');
+  var list = sessionHistory;
+  if (currentHistoryFilter !== 'all') {
+    list = list.filter(function(h){ return h.gym === currentHistoryFilter; });
+  }
+  if (list.length === 0) {
+    el.innerHTML = '<div style="font-size:15px;color:var(--muted);font-family:\'Courier New\',monospace">No sessions logged yet for this gym.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  list.forEach(function(h, idx) {
+    var realIdx = sessionHistory.indexOf(h);
+    var count = Object.values(h.data).filter(function(d){ return d.sets && d.sets.length > 0; }).length;
+    var tagClass = 'hist-tag-' + h.session.toLowerCase();
+    var item = document.createElement('div');
+    item.className = 'hist-item';
+    item.onclick = function(){ openHistoryDetail(realIdx); };
+    item.innerHTML = `
+      <div class="hist-top">
+        <span class="hist-session-tag ${tagClass}">${h.session} · ${h.label}</span>
+        <span class="hist-date">${h.date}</span>
+      </div>
+      <div class="hist-gym">${h.gymName}</div>
+      <div class="hist-count">${count} exercises logged</div>
+    `;
+    el.appendChild(item);
+  });
+}
+
+function openHistoryDetail(idx) {
+  var h = sessionHistory[idx];
+  if (!h) return;
+  var isKg = h.gym !== 'rivercreek';
+  var unit = isKg ? 'kg' : 'lbs';
+
+  document.getElementById('hist-detail-title').textContent = 'Session ' + h.session + ' — ' + h.label;
+  document.getElementById('hist-detail-sub').textContent = h.gymName + ' · ' + h.date;
+
+  var body = document.getElementById('hist-detail-body');
+  body.innerHTML = '';
+
+  var sessDef = SESSIONS[h.session];
+  var exOrder = sessDef ? sessDef.exercises.map(function(e){return e.id;}) : Object.keys(h.data);
+
+  exOrder.forEach(function(exId) {
+    var d = h.data[exId];
+    if (!d || !d.sets || d.sets.length === 0) return;
+    var validSets = d.sets.filter(function(st){ return !isNaN(st.weight) && !isNaN(st.reps); });
+    if (validSets.length === 0) return;
+
+    var exName = d.name || exId;
+    var setsText = validSets.map(function(st){ return st.weight+unit+'\u00d7'+st.reps; }).join(' \u00b7 ');
+
+    var card = document.createElement('div');
+    card.className = 'hist-detail-card';
+    var html = '<div class="hist-detail-ex">'+exName+'</div><div class="hist-detail-sets">'+setsText+'</div>';
+    if (d.comment && d.comment.trim()) {
+      html += '<div class="hist-detail-comment">\ud83d\udcac ' + d.comment.trim() + '</div>';
+    }
+    card.innerHTML = html;
+    body.appendChild(card);
+  });
+
+  showScreen('history-detail');
+}
+</script>
+</body>
+</html>

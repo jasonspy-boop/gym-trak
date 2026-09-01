@@ -1,4 +1,4 @@
-var CACHE_NAME = 'ppl-tracker-v1';
+var CACHE_NAME = 'ppl-tracker-v3';
 var FILES_TO_CACHE = [
   './index.html',
   './manifest.json',

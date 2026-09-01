@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PPL Tracker">
+<meta name="apple-mobile-web-app-title" content="Gym Tracker">
 <meta name="theme-color" content="#211F1A">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>PPL Tracker</title>
+<title>Gym Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -28,12 +28,13 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .hdr{background:var(--accent);padding:12px 16px;display:flex;align-items:center;gap:12px}
 .hdr-back{color:#fff;font-size:20px;cursor:pointer;padding:4px 8px;margin:-4px -4px -4px -8px}
 .hdr-title{color:#fff;font-size:17px;font-weight:600;flex:1}
-.hdr-sub{color:#aaa;font-size:12px;font-family:'Courier New',monospace;letter-spacing:0.05em}
+.hdr-sub{color:#aaa;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:0.05em}
 
 /* HOME */
 .home-hero{background:var(--accent);padding:14px 16px;text-align:center;position:relative;overflow:hidden;min-height:78px}
 .home-logo{color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.01em;position:relative;z-index:2}
-.home-tagline{color:#999;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-family:'Courier New',monospace;margin-top:2px;position:relative;z-index:2}
+.home-tagline{color:#999;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:2px;position:relative;z-index:2}
+.version-tag{color:#8C7A3E;font-size:10px;letter-spacing:0.08em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:6px;position:relative;z-index:2;opacity:0.85}
 .hero-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center 25%;z-index:0}
 .hero-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(33,31,26,0.55) 0%,rgba(33,31,26,0.88) 100%);z-index:1}
 
@@ -44,7 +45,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 
 /* HISTORY FILTER */
 .history-filter-row{display:flex;gap:8px;flex-wrap:wrap}
-.filter-chip{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:8px 16px;font-size:16.6px;color:var(--muted);cursor:pointer;font-family:'Courier New',monospace}
+.filter-chip{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:8px 16px;font-size:16.6px;color:var(--muted);cursor:pointer;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
 /* HISTORY LIST */
@@ -55,9 +56,9 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .hist-tag-a{background:var(--push)}
 .hist-tag-b{background:var(--pull)}
 .hist-tag-c{background:var(--legs)}
-.hist-date{font-size:15.6px;color:var(--muted);font-family:'Courier New',monospace}
+.hist-date{font-size:15.6px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .hist-gym{font-size:15.6px;color:var(--text);font-weight:500;margin-top:2px}
-.hist-count{font-size:14.4px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
+.hist-count{font-size:14.4px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:2px}
 
 /* HISTORY DETAIL */
 .hist-detail-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
@@ -66,18 +67,20 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .hist-detail-comment{margin-top:8px;padding:8px 10px;background:var(--push-bg);border-left:3px solid var(--push);border-radius:4px;font-size:16px;color:#5c2e22;font-style:italic}
 
 .section{padding:16px}
-.section-title{font-size:17.2px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:10px}
+.section-title{font-size:17.2px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-bottom:10px}
 
 /* GYM SELECTOR */
 .gym-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .gym-card{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;transition:all 0.15s;position:relative}
-.gym-card.active{border-color:var(--accent);background:#F0F0F8}
+.gym-card.active{border-color:var(--legs);background:var(--legs-bg);box-shadow:0 0 0 1px var(--legs)}
 .gym-card.coming-soon{opacity:0.5;cursor:not-allowed}
 .gym-name{font-size:21.8px;font-weight:600;margin-bottom:2px}
-.gym-loc{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace}
-.gym-unit{font-size:15.6px;color:var(--muted);margin-top:6px;font-family:'Courier New',monospace}
-.gym-badge{position:absolute;top:8px;right:8px;font-size:14px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:10px;font-family:'Courier New',monospace}
-.gym-soon{position:absolute;top:8px;right:8px;font-size:14px;background:#ddd;color:#888;padding:2px 6px;border-radius:10px;font-family:'Courier New',monospace}
+.gym-loc{font-size:17.2px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.gym-unit{font-size:15.6px;color:var(--muted);margin-top:6px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.gym-badge{position:absolute;top:8px;right:8px;font-size:14px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:10px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.gym-check{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--legs);color:#fff;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center}
+.gym-card.active .gym-check{display:flex}
+.gym-soon{position:absolute;top:8px;right:8px;font-size:14px;background:#ddd;color:#888;padding:2px 6px;border-radius:10px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 
 /* SESSION SELECTOR */
 .session-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -85,16 +88,16 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .session-btn.a{background:var(--push-bg);color:var(--push);border:1.5px solid var(--push)}
 .session-btn.b{background:var(--pull-bg);color:var(--pull);border:1.5px solid var(--pull)}
 .session-btn.c{background:var(--legs-bg);color:var(--legs);border:1.5px solid var(--legs)}
-.session-label{font-size:15.6px;font-family:'Courier New',monospace;margin-top:4px;opacity:0.8}
+.session-label{font-size:15.6px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:4px;opacity:0.8}
 
 /* RECENT */
 .recent-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
 .recent-name{font-size:20.3px;font-weight:500}
-.recent-date{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace}
+.recent-date{font-size:17.2px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .recent-gym{font-size:15.6px;color:var(--muted);margin-top:2px}
 
 /* SESSION SCREEN */
-.session-hdr-bar{padding:6px 16px;font-size:12px;font-family:'Courier New',monospace;letter-spacing:0.08em;text-transform:uppercase;color:#fff;position:relative;overflow:hidden;min-height:26px}
+.session-hdr-bar{padding:6px 16px;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#fff;position:relative;overflow:hidden;min-height:26px}
 .session-hdr-bar span{position:relative;z-index:2}
 .hdr-a{background:var(--push)}.hdr-b{background:var(--pull)}.hdr-c{background:var(--legs)}
 
@@ -120,12 +123,12 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .ex-num.num-complete{background:var(--legs);color:#fff;border:1.5px solid var(--legs)}
 .ex-info{flex:1}
 .ex-name{font-size:21.8px;font-weight:600}
-.ex-target{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
+.ex-target{font-size:17.2px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:2px}
 .ex-flag-badge{font-size:13px;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:4px;display:inline-block;vertical-align:middle}
 .ex-flag-badge.flag-red{background:#F5D9D4;color:#6B1F14}
 .ex-flag-badge.flag-caution{background:var(--push-bg);color:#7A2E1F}
-.ex-last{font-size:15.6px;color:#b0aca4;font-family:'Courier New',monospace;margin-top:2px}
-.ex-status{font-size:17.2px;font-family:'Courier New',monospace;flex-shrink:0}
+.ex-last{font-size:15.6px;color:#b0aca4;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:2px}
+.ex-status{font-size:17.2px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;flex-shrink:0}
 .ex-done{color:var(--legs)}
 .chevron{color:#bbb;font-size:17.2px;transition:transform 0.2s;flex-shrink:0}
 
@@ -140,14 +143,14 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .sets-hdr{display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:8px;margin-bottom:6px}
 .sets-hdr-lbl{font-size:15.6px;color:var(--muted);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:0.08em}
 .set-row{display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:8px;margin-bottom:6px;align-items:center}
-.set-num{font-size:18.7px;font-weight:700;color:var(--muted);font-family:'Courier New',monospace;text-align:center}
+.set-num{font-size:18.7px;font-weight:700;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-align:center}
 .set-input{border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:23.4px;width:100%;text-align:center;background:#fff;color:var(--text);-webkit-appearance:none}
 .set-input:focus{border-color:var(--accent);outline:none}
 .set-input.logged{background:#EEF5E6;border-color:var(--legs)}
 .set-log-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px;font-size:18.7px;font-weight:600;cursor:pointer;width:100%}
 .set-log-btn.done{background:var(--legs)}
 
-.add-set-btn{background:none;border:1.5px dashed var(--border);border-radius:6px;padding:8px;width:100%;font-size:18.7px;color:var(--muted);cursor:pointer;margin-top:4px;font-family:'Courier New',monospace}
+.add-set-btn{background:none;border:1.5px dashed var(--border);border-radius:6px;padding:8px;width:100%;font-size:18.7px;color:var(--muted);cursor:pointer;margin-top:4px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 
 .next-target{margin-top:10px;padding:8px 10px;background:var(--pull-bg);border-radius:6px;font-size:17.2px;color:var(--pull);font-family:'Courier New',monospace}
 .next-target strong{font-weight:600}
@@ -155,13 +158,13 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .next-target.target-hold{background:#F2EEDD;color:#6B5D1F;border:1.5px solid var(--gold)}
 .next-target.target-caution{background:var(--push-bg);color:#7A2E1F;border:1.5px solid var(--push)}
 .next-target.target-redflag{background:#F5D9D4;color:#6B1F14;border:2px solid #A32D2D;font-weight:600}
-.comment-label{font-size:14.4px;color:var(--muted);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:0.05em;margin-top:10px;margin-bottom:4px}
+.comment-label{font-size:14.4px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:0.05em;margin-top:10px;margin-bottom:4px}
 .comment-box{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:16.6px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--text);background:#fff;resize:vertical;-webkit-appearance:none}
 .import-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
-.import-hint{font-size:13px;color:var(--muted);font-family:'Courier New',monospace;line-height:1.5;margin-bottom:10px}
+.import-hint{font-size:13px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.5;margin-bottom:10px}
 .import-textarea{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:10px;font-size:14px;font-family:'Courier New',monospace;color:var(--text);background:#FAFAF8;resize:vertical;-webkit-appearance:none;margin-bottom:10px}
 .import-btn{width:100%;background:var(--gold);color:#fff;border:none;border-radius:8px;padding:12px;font-size:16px;font-weight:600;cursor:pointer}
-.import-status{margin-top:10px;padding:10px;border-radius:6px;font-size:14px;font-family:'Courier New',monospace;line-height:1.6}
+.import-status{margin-top:10px;padding:10px;border-radius:6px;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.6}
 .import-status.success{background:var(--legs-bg);color:#3D5228;border:1.5px solid var(--legs)}
 .import-status.error{background:var(--push-bg);color:#7A2E1F;border:1.5px solid var(--push)}
 .comment-box:focus{border-color:var(--accent);outline:none}
@@ -174,12 +177,12 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .complete-hero{background:var(--legs);padding:40px 16px;text-align:center}
 .complete-icon{font-size:74.9px;margin-bottom:8px}
 .complete-title{color:#fff;font-size:37.4px;font-weight:700}
-.complete-sub{color:rgba(255,255,255,0.8);font-size:20.3px;margin-top:4px;font-family:'Courier New',monospace}
+.complete-sub{color:rgba(255,255,255,0.8);font-size:20.3px;margin-top:4px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .summary-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;padding:12px}
 .summary-ex{font-size:20.3px;font-weight:600;margin-bottom:4px}
-.summary-sets{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace;line-height:1.8}
+.summary-sets{font-size:17.2px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.8}
 .next-session-card{background:var(--pull-bg);border:1.5px solid var(--pull);border-radius:10px;padding:14px;margin-bottom:8px}
-.next-session-title{font-size:18.7px;font-weight:700;color:var(--pull);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.next-session-title{font-size:18.7px;font-weight:700;color:var(--pull);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
 .next-row{display:flex;justify-content:space-between;font-size:18.7px;font-family:'Courier New',monospace;padding:5px 6px;border-bottom:1px solid rgba(42,111,176,0.1);border-radius:4px}
 .next-row.row-up{background:rgba(92,107,62,0.08)}
 .next-row.row-hold{background:rgba(140,122,62,0.08)}
@@ -201,8 +204,9 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
   <div class="home-hero" id="home-hero">
     <div class="hero-bg" id="home-hero-bg"></div>
     <div class="hero-overlay"></div>
-    <div class="home-logo">PPL Tracker</div>
+    <div class="home-logo">Gym Tracker</div>
     <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
+    <div class="version-tag" id="version-tag">v1.6</div>
   </div>
 
   <div class="tab-bar">
@@ -215,12 +219,13 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
     <div class="section-title">Gym Location</div>
     <div class="gym-grid">
       <div class="gym-card" id="gym-rivercreek" onclick="selectGym('rivercreek')">
+        <div class="gym-check" id="check-rivercreek">\u2713</div>
         <div class="gym-name">River Creek</div>
         <div class="gym-loc">Estero, Florida</div>
         <div class="gym-unit">weights in lbs</div>
-        <div class="gym-badge">Active</div>
       </div>
       <div class="gym-card" id="gym-mandalay" onclick="selectGym('mandalay')">
+        <div class="gym-check" id="check-mandalay">\u2713</div>
         <div class="gym-name">Mandalay</div>
         <div class="gym-loc">United Kingdom</div>
         <div class="gym-unit">weights in kg</div>
@@ -251,7 +256,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 
   <div class="section">
     <div class="section-title">Recent Sessions</div>
-    <div id="recent-list"><div style="font-size:12px;color:var(--muted);font-family:'Courier New',monospace">No sessions logged yet.</div></div>
+    <div id="recent-list"><div style="font-size:12px;color:var(--muted)">No sessions logged yet.</div></div>
   </div>
 
   <div class="section">
@@ -1238,7 +1243,7 @@ function importSessions() {
 function renderRecent() {
   var el = document.getElementById('recent-list');
   if (sessionHistory.length === 0) {
-    el.innerHTML = '<div style="font-size:12px;color:var(--muted);font-family:\'Courier New\',monospace">No sessions logged yet.</div>';
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted)">No sessions logged yet.</div>';
     return;
   }
   el.innerHTML = '';
@@ -1286,7 +1291,7 @@ function renderFullHistory() {
     list = list.filter(function(h){ return h.gym === currentHistoryFilter; });
   }
   if (list.length === 0) {
-    el.innerHTML = '<div style="font-size:15px;color:var(--muted);font-family:\'Courier New\',monospace">No sessions logged yet for this gym.</div>';
+    el.innerHTML = '<div style="font-size:15px;color:var(--muted)">No sessions logged yet for this gym.</div>';
     return;
   }
   el.innerHTML = '';

@@ -1,6 +1,6 @@
 {
-  "name": "PPL Tracker",
-  "short_name": "PPL Tracker",
+  "name": "Gym Tracker",
+  "short_name": "Gym Tracker",
   "description": "Push Pull Legs hypertrophy session logger",
   "start_url": "./index.html",
   "display": "standalone",

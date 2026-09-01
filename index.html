@@ -157,6 +157,13 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .next-target.target-redflag{background:#F5D9D4;color:#6B1F14;border:2px solid #A32D2D;font-weight:600}
 .comment-label{font-size:14.4px;color:var(--muted);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:0.05em;margin-top:10px;margin-bottom:4px}
 .comment-box{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:16.6px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--text);background:#fff;resize:vertical;-webkit-appearance:none}
+.import-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.import-hint{font-size:13px;color:var(--muted);font-family:'Courier New',monospace;line-height:1.5;margin-bottom:10px}
+.import-textarea{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:10px;font-size:14px;font-family:'Courier New',monospace;color:var(--text);background:#FAFAF8;resize:vertical;-webkit-appearance:none;margin-bottom:10px}
+.import-btn{width:100%;background:var(--gold);color:#fff;border:none;border-radius:8px;padding:12px;font-size:16px;font-weight:600;cursor:pointer}
+.import-status{margin-top:10px;padding:10px;border-radius:6px;font-size:14px;font-family:'Courier New',monospace;line-height:1.6}
+.import-status.success{background:var(--legs-bg);color:#3D5228;border:1.5px solid var(--legs)}
+.import-status.error{background:var(--push-bg);color:#7A2E1F;border:1.5px solid var(--push)}
 .comment-box:focus{border-color:var(--accent);outline:none}
 
 /* FINISH BTN */
@@ -245,6 +252,16 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
   <div class="section">
     <div class="section-title">Recent Sessions</div>
     <div id="recent-list"><div style="font-size:12px;color:var(--muted);font-family:'Courier New',monospace">No sessions logged yet.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Import Past Sessions</div>
+    <div class="import-box">
+      <div class="import-hint">Paste session results below (any format \u2014 same as pasted in Claude chat) and tap Import. Existing history won't be duplicated.</div>
+      <textarea id="import-textarea" class="import-textarea" rows="6" placeholder="River Creek \u00b7 Session B \u2014 Pull \u00b7 1 Sep 2026&#10;&#10;1 Barbell bent-over row: 90lbs\u00d78, 140lbs\u00d78...&#10;2 Lat pulldown: 150lbs\u00d710..."></textarea>
+      <button class="import-btn" onclick="importSessions()">\ud83d\udce5 Import Sessions</button>
+      <div id="import-status" class="import-status" style="display:none"></div>
+    </div>
   </div>
   </div>
 
@@ -978,6 +995,243 @@ function fallbackCopy(text, cb) {
     cb();
   } catch(e) {
     alert('Copy failed \u2014 you can select and copy the summary above manually.');
+  }
+}
+
+// ============================================================
+// IMPORT PAST SESSIONS (bulk paste parser)
+// ============================================================
+function normalizeExName(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// Build a lookup: normalized exercise name -> {sessionKey, exId}
+function buildExNameLookup() {
+  var map = {};
+  ['A','B','C'].forEach(function(sk) {
+    SESSIONS[sk].exercises.forEach(function(ex) {
+      map[normalizeExName(ex.name)] = { sessionKey: sk, exId: ex.id, exName: ex.name };
+      // also map common short forms
+      var short = ex.name.split(' ')[0] + ex.name.split(' ')[1];
+      map[normalizeExName(short)] = map[normalizeExName(short)] || { sessionKey: sk, exId: ex.id, exName: ex.name };
+    });
+  });
+  return map;
+}
+
+function detectGymKey(text) {
+  var lc = text.toLowerCase();
+  if (lc.indexOf('river creek') !== -1 || lc.indexOf('rivercreek') !== -1) return 'rivercreek';
+  if (lc.indexOf('mandalay') !== -1) return 'mandalay';
+  if (lc.indexOf('treez') !== -1 || lc.indexOf('trees') !== -1) return 'trees';
+  return null;
+}
+
+function detectSessionKey(text) {
+  var m = text.match(/session\s*([abc])\b/i);
+  if (m) return m[1].toUpperCase();
+  return null;
+}
+
+function detectDate(text) {
+  // Try "1 Sep 2026" or "Sep 1 2026" or "1/9/2026" style; fallback to today
+  var m = text.match(/(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/);
+  if (m) return m[1];
+  m = text.match(/([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})/);
+  if (m) return m[1];
+  return new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+}
+
+function parseSetsFromLine(line) {
+  var sets = [];
+  // Pattern A: "90lbs×8, 140lbs×8" - standard weight x reps pairs
+  var reA = /(\d+(?:\.\d+)?)\s*(?:lbs?|kg)?\s*[x\u00d7]\s*(\d+)\s*[x\u00d7]\s*(\d+)/gi;
+  var reB = /(\d+(?:\.\d+)?)\s*(?:lbs?|kg)?\s*[x\u00d7]\s*(\d+)(?!\s*[x\u00d7]\s*\d)/gi;
+  var matchedRanges = [];
+  var m;
+  // First pass: weight x reps x setcount (e.g. "20kg x8 x4" = 20kg, 8 reps, 4 sets)
+  while ((m = reA.exec(line)) !== null) {
+    var wt = parseFloat(m[1]), reps = parseInt(m[2]), count = parseInt(m[3]);
+    for (var k = 0; k < count; k++) sets.push({ weight: wt, reps: reps });
+    matchedRanges.push([m.index, m.index + m[0].length]);
+  }
+  // Second pass: plain weight x reps pairs, skipping ranges already matched above
+  while ((m = reB.exec(line)) !== null) {
+    var overlap = matchedRanges.some(function(r){ return m.index >= r[0] && m.index < r[1]; });
+    if (overlap) continue;
+    sets.push({ weight: parseFloat(m[1]), reps: parseInt(m[2]) });
+  }
+  return sets;
+}
+
+function preprocessLines(text) {
+  // Merge a line that's just an exercise name (no digits) with the following line(s) that contain sets,
+  // so "Ex1 Smith bench press\n20kg x8 x4" becomes one line the main parser can read.
+  var rawLines = text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 0; });
+  var isMetaLine = function(l) {
+    var lc = l.toLowerCase();
+    return lc.indexOf('session') !== -1 && (lc.indexOf('river creek') !== -1 || lc.indexOf('mandalay') !== -1 || lc.indexOf('treez') !== -1 || lc.indexOf('trees') !== -1 || /\bsession\s*[abc]\b/i.test(l));
+  };
+  var merged = [];
+  for (var i = 0; i < rawLines.length; i++) {
+    var line = rawLines[i];
+    if (isMetaLine(line)) { merged.push(line); continue; }
+    var isExPrefixed = /^(ex\s*\d+|exercise\s*\d+)\b/i.test(line);
+    var hasSetPattern = /(?:^|[^a-z])\d+(?:\.\d+)?\s*(?:lbs?|kg|plate)?\s*[x\u00d7]\s*\d/i.test(line);
+    var looksLikeHeader = isExPrefixed || (line.length < 40 && !hasSetPattern && !/^\d/.test(line));
+    if (looksLikeHeader && !hasSetPattern) {
+      var namePart = line.replace(/^ex\s*\d+\s*[:\-]?\s*/i, '').replace(/^exercise\s*\d+\s*[:\-]?\s*/i, '').trim();
+      var setsParts = [];
+      var j = i + 1;
+      while (j < rawLines.length) {
+        var next = rawLines[j];
+        if (isMetaLine(next)) break;
+        var nextIsExPrefixed = /^(ex\s*\d+|exercise\s*\d+)\b/i.test(next);
+        var nextHasSetPattern = /(?:^|[^a-z])\d+(?:\.\d+)?\s*(?:lbs?|kg|plate)?\s*[x\u00d7]\s*\d/i.test(next);
+        var nextIsHeader = nextIsExPrefixed || (next.length < 40 && !nextHasSetPattern && !/^\d/.test(next));
+        if (nextIsHeader && !nextHasSetPattern) break;
+        setsParts.push(next);
+        j++;
+      }
+      if (setsParts.length > 0) {
+        merged.push(namePart + ': ' + setsParts.join(', '));
+        i = j - 1;
+        continue;
+      }
+    }
+    merged.push(line);
+  }
+  return merged.join('\n');
+}
+
+function parseSessionText(text) {
+  text = preprocessLines(text);
+  var lookup = buildExNameLookup();
+  var gymKey = detectGymKey(text);
+  var sessionKey = detectSessionKey(text);
+  var dateStr = detectDate(text);
+
+  if (!gymKey || !sessionKey) {
+    return { error: 'Could not detect gym and/or session (A/B/C) from the text. Include e.g. "River Creek \u00b7 Session B" at the top.' };
+  }
+
+  var lines = text.split('\n');
+  var data = {};
+  var matchedCount = 0;
+  var unmatchedLines = [];
+
+  lines.forEach(function(line) {
+    var trimmed = line.trim();
+    if (!trimmed) return;
+    // Skip header-ish lines (contain the gym/session/date info, no digits with x/lbs pattern needed)
+    var setsFound = parseSetsFromLine(trimmed);
+    if (setsFound.length === 0) return;
+
+    // Extract exercise name: text before the colon, or before first number if no colon
+    var exNamePart = trimmed;
+    var colonIdx = trimmed.indexOf(':');
+    if (colonIdx !== -1) {
+      exNamePart = trimmed.substring(0, colonIdx);
+    } else {
+      var firstNum = trimmed.search(/\d/);
+      exNamePart = firstNum > 0 ? trimmed.substring(0, firstNum) : trimmed;
+    }
+    // Strip leading numbering like "1 ", "1)", "1."
+    exNamePart = exNamePart.replace(/^\s*\d+[\.\)]?\s*/, '').trim();
+
+    var norm = normalizeExName(exNamePart);
+    var match = lookup[norm];
+    if (!match) {
+      // try partial match
+      for (var key in lookup) {
+        if (norm.indexOf(key) !== -1 || key.indexOf(norm) !== -1) { match = lookup[key]; break; }
+      }
+    }
+    if (!match || match.sessionKey !== sessionKey) {
+      unmatchedLines.push(trimmed);
+      return;
+    }
+
+    // Extract comment after " — " or " - " following the sets
+    var comment = '';
+    var dashIdx = trimmed.search(/\s[\u2014\u2013-]\s/);
+    if (dashIdx !== -1) {
+      comment = trimmed.substring(dashIdx).replace(/^\s*[\u2014\u2013-]\s*/, '').trim();
+    }
+
+    if (!data[match.exId]) data[match.exId] = { sets: [], name: match.exName, comment: '' };
+    setsFound.forEach(function(s, i) {
+      data[match.exId].sets.push({ set: i+1, weight: s.weight, reps: s.reps });
+    });
+    if (comment) data[match.exId].comment = comment;
+    matchedCount++;
+  });
+
+  if (matchedCount === 0) {
+    return { error: 'No exercises could be matched. Check exercise names match the app\u2019s naming (e.g. "Barbell bent-over row", "Lat pulldown").' };
+  }
+
+  var record = {
+    session: sessionKey,
+    gym: gymKey,
+    gymName: GYMS[gymKey] ? GYMS[gymKey].name : gymKey,
+    date: dateStr,
+    timestamp: Date.now(),
+    label: SESSIONS[sessionKey].label,
+    data: data
+  };
+
+  return { record: record, matchedCount: matchedCount, unmatchedLines: unmatchedLines };
+}
+
+function isDuplicateRecord(record) {
+  return sessionHistory.some(function(h) {
+    return h.gym === record.gym && h.session === record.session && h.date === record.date;
+  });
+}
+
+function importSessions() {
+  var text = document.getElementById('import-textarea').value;
+  var statusEl = document.getElementById('import-status');
+  if (!text || !text.trim()) {
+    statusEl.style.display = 'block';
+    statusEl.className = 'import-status error';
+    statusEl.textContent = 'Paste some session text first.';
+    return;
+  }
+
+  // Split on blank-line-separated blocks that each start with a gym/session header
+  var blocks = text.split(/\n\s*\n(?=[A-Za-z])/).map(function(b){ return b.trim(); }).filter(Boolean);
+  if (blocks.length === 0) blocks = [text];
+
+  var imported = 0, skipped = 0, errors = [];
+
+  blocks.forEach(function(block) {
+    var result = parseSessionText(block);
+    if (result.error) {
+      errors.push(result.error);
+      return;
+    }
+    if (isDuplicateRecord(result.record)) {
+      skipped++;
+      return;
+    }
+    sessionHistory.unshift(result.record);
+    imported++;
+  });
+
+  if (sessionHistory.length > 100) sessionHistory = sessionHistory.slice(0,100);
+  safeSet('ppl_history', JSON.stringify(sessionHistory));
+
+  statusEl.style.display = 'block';
+  if (imported > 0) {
+    statusEl.className = 'import-status success';
+    statusEl.textContent = '\u2713 Imported ' + imported + ' session(s).' + (skipped > 0 ? ' Skipped ' + skipped + ' duplicate(s).' : '') + (errors.length > 0 ? ' ' + errors.length + ' block(s) had issues.' : '');
+    document.getElementById('import-textarea').value = '';
+    renderRecent();
+  } else {
+    statusEl.className = 'import-status error';
+    statusEl.textContent = skipped > 0 ? 'All ' + skipped + ' session(s) already imported.' : (errors[0] || 'Nothing could be imported.');
   }
 }
 

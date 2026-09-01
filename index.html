@@ -31,7 +31,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .hdr-sub{color:#aaa;font-size:12px;font-family:'Courier New',monospace;letter-spacing:0.05em}
 
 /* HOME */
-.home-hero{background:var(--accent);padding:14px 16px;text-align:center;position:relative;overflow:hidden}
+.home-hero{background:var(--accent);padding:14px 16px;text-align:center;position:relative;overflow:hidden;min-height:78px}
 .home-logo{color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.01em;position:relative;z-index:2}
 .home-tagline{color:#999;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-family:'Courier New',monospace;margin-top:2px;position:relative;z-index:2}
 .hero-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center 25%;z-index:0}
@@ -94,19 +94,30 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .recent-gym{font-size:15.6px;color:var(--muted);margin-top:2px}
 
 /* SESSION SCREEN */
-.session-hdr-bar{padding:6px 16px;font-size:12px;font-family:'Courier New',monospace;letter-spacing:0.08em;text-transform:uppercase;color:#fff;position:relative;overflow:hidden}
+.session-hdr-bar{padding:6px 16px;font-size:12px;font-family:'Courier New',monospace;letter-spacing:0.08em;text-transform:uppercase;color:#fff;position:relative;overflow:hidden;min-height:26px}
 .session-hdr-bar span{position:relative;z-index:2}
 .hdr-a{background:var(--push)}.hdr-b{background:var(--pull)}.hdr-c{background:var(--legs)}
 
 .ex-list{padding:12px;flex:1;overflow-y:auto}
 
 .ex-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.warmup-card{background:#FBF6E9;border:1.5px solid var(--gold);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.warmup-head{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer}
+.warmup-icon{font-size:16px}
+.warmup-title{font-size:15.6px;font-weight:700;color:#7A6420;flex:1}
+.warmup-body{display:none;padding:0 14px 12px}
+.warmup-body.open{display:block}
+.warmup-list{list-style:none;padding:0;margin:0}
+.warmup-list li{font-size:14.5px;color:#5c4f22;padding:5px 0 5px 18px;position:relative;line-height:1.4}
+.warmup-list li:before{content:'\2022';position:absolute;left:2px;color:var(--gold)}
 .ex-head{display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer}
-.ex-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17.2px;font-weight:700;flex-shrink:0}
+.ex-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17.2px;font-weight:700;flex-shrink:0;transition:all 0.2s}
 .num-a{background:var(--push-bg);color:var(--push);border:1.5px solid var(--push)}
 .num-b{background:var(--pull-bg);color:var(--pull);border:1.5px solid var(--pull)}
 .num-c{background:var(--legs-bg);color:var(--legs);border:1.5px solid var(--legs)}
 .num-core{background:#f0f0f0;color:#555;border:1.5px solid #ccc}
+.ex-num.num-progress{background:#F2EEDD;color:#8C7A3E;border:1.5px solid #C9A227}
+.ex-num.num-complete{background:var(--legs);color:#fff;border:1.5px solid var(--legs)}
 .ex-info{flex:1}
 .ex-name{font-size:21.8px;font-weight:600}
 .ex-target{font-size:17.2px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
@@ -121,6 +132,8 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .ex-body{display:none;border-top:1px solid var(--border);padding:12px;background:#FAFAF8}
 .ex-body.open{display:block}
 
+.ex-ref-img-wrap{width:100%;height:120px;border-radius:8px;overflow:hidden;margin-bottom:10px;background:#EDEAE0;position:relative}
+.ex-ref-img{width:100%;height:100%;object-fit:cover;opacity:0.4;filter:grayscale(30%)}
 .cue-box{font-size:17.2px;color:#3D3A32;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.55;margin-bottom:14px;padding:12px 14px;background:#F7F5EE;border:1.5px solid #D8D0BA;border-left:4px solid var(--gold);border-radius:8px}
 
 /* SET LOGGING */
@@ -336,6 +349,13 @@ var SESSIONS = {
     label: 'Push',
     sub: 'Chest \u00b7 Shoulders \u00b7 Triceps',
     color: 'a',
+    warmup: [
+      'Arm circles \u2014 20 forward, 20 back',
+      'Shoulder CARs \u2014 5 each arm, slow controlled circles',
+      'Band pull-apart \u2014 2 \u00d7 15',
+      'Smith bar only \u2014 10\u201317 lbs/kg \u00d7 10 press',
+      'Light DB press \u2014 light weight \u00d7 10'
+    ],
     exercises: [
       { id:'bench', name:'Smith bench press', target:'105 lbs \u00d7 3\u00d78', last:'100 lbs \u00d7 8,10,8', cue:'5\u201310\u00b0 incline \u00b7 retract scapula \u00b7 elbows 45\u201360\u00b0 \u00b7 drive bar \u00b7 rest 2\u20133 min', targetKg:'25 kg ea (67 kg) \u00d7 4\u00d78', lastKg:'22.5 kg ea \u00d7 4\u00d78 (7,8 hard)', tW:105, tR:8, tWkg:25, tRkg:8 },
       { id:'incline', name:'Incline DB press', target:'30 lbs ea \u00d7 3\u00d712', last:'30 lbs \u00d7 10,10,12 (last shaky)', cue:'30\u201345\u00b0 \u00b7 3-sec eccentric \u00b7 elbows slightly flared \u00b7 neutral wrist', targetKg:'21.5 kg ea \u00d7 3\u00d710', lastKg:'20.5 kg ea \u00d7 3\u00d710', tW:30, tR:12, tWkg:21.5, tRkg:10 },
@@ -351,6 +371,13 @@ var SESSIONS = {
     label: 'Pull',
     sub: 'Back \u00b7 Biceps \u00b7 Rear Delts',
     color: 'b',
+    warmup: [
+      'Arm circles \u2014 20 forward, 20 back',
+      'Scapular pull-ups \u2014 2 \u00d7 10 (dead hang, squeeze shoulder blades)',
+      'Band pull-apart \u2014 2 \u00d7 15',
+      'Light barbell row \u2014 bar only \u00d7 10',
+      'Light lat pulldown \u2014 very light \u00d7 15'
+    ],
     exercises: [
       { id:'row', name:'Barbell bent-over row', target:'140 lbs (65 ea) \u00d7 3\u00d78', last:'45ea\u00d710, 55ea\u00d78, 65ea\u00d79', cue:'Hip hinge 45\u00b0 \u00b7 brace core \u00b7 drive elbows to hips \u00b7 pause at top \u00b7 2-sec eccentric \u00b7 rest 2\u20133 min', targetKg:'62.5 kg \u00d7 4\u00d78', lastKg:'60 kg \u00d7 4\u00d78', tW:140, tR:8, tWkg:62.5, tRkg:8 },
       { id:'latpull', name:'Lat pulldown', target:'150 lbs \u00d7 3\u00d710', last:'150\u00d76, 145\u00d78, 145\u00d710, 150\u00d710', cue:'Pull to upper chest \u00b7 lean back 10\u00b0 \u00b7 initiate with lat not bicep \u00b7 2-sec return', targetKg:'140 kg (Marcy) \u00d7 4\u00d710', lastKg:'130 kg \u00d7 4\u00d710', tW:150, tR:10, tWkg:140, tRkg:10 },
@@ -366,6 +393,13 @@ var SESSIONS = {
     label: 'Legs + Core',
     sub: 'Quads \u00b7 Hamstrings \u00b7 Glutes \u00b7 Core',
     color: 'c',
+    warmup: [
+      'Hip circles \u2014 20 each direction',
+      'Leg swing \u2014 15 each leg forward/back, 15 side to side',
+      'Bodyweight squat (2-sec pause at bottom) \u2014 2 \u00d7 15',
+      'Glute bridge \u2014 2 \u00d7 15 bodyweight',
+      'Smith bar only \u2014 10\u201317 lbs/kg \u00d7 10 shallow squat'
+    ],
     exercises: [
       { id:'squat', name:'Smith machine squat', target:'120 lbs \u00d7 3\u00d78', last:'Skipped \u2014 rack busy', cue:'Face stack side \u00b7 high bar \u00b7 360\u00b0 brace \u00b7 knees track toes \u00b7 parallel depth \u00b7 rest 2\u20133 min', targetKg:'69.5 kg \u00d7 4\u00d78', lastKg:'67 kg \u00d7 4\u00d78', tW:120, tR:8, tWkg:69.5, tRkg:8 },
       { id:'rdl', name:'Romanian deadlift', target:'145 lbs \u00d7 3\u00d78', last:'Skipped \u2014 rack busy', cue:'Face AWAY from stack \u00b7 hip hinge \u00b7 soft knee \u00b7 bar close to legs \u00b7 2-sec eccentric', targetKg:'85 kg \u00d7 4\u00d78', lastKg:'80 kg \u00d7 3\u00d78', tW:145, tR:8, tWkg:85, tRkg:8 },
@@ -441,6 +475,42 @@ function startSession(sess) {
 // ============================================================
 // DYNAMIC TARGET FROM HISTORY (uses judgment engine on last logged data)
 // ============================================================
+// ============================================================
+// EXERCISE REFERENCE IMAGES (free-exercise-db, public domain)
+// ============================================================
+var EX_IMAGE_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+var EX_IMAGE_MAP = {
+  bench: 'Smith_Machine_Bench_Press/0.jpg',
+  incline: 'Incline_Dumbbell_Press/0.jpg',
+  chestpress: 'Smith_Machine_Bench_Press/1.jpg',
+  fly: 'Cable_Crossover/0.jpg',
+  ohp: 'Standing_Military_Press/0.jpg',
+  lateral: 'Cable_Lateral_Raise/0.jpg',
+  tricep: 'Triceps_Pushdown/0.jpg',
+  skull: 'Lying_Triceps_Press/0.jpg',
+  row: 'Bent_Over_Barbell_Row/0.jpg',
+  latpull: 'Wide-Grip_Lat_Pulldown/0.jpg',
+  seatedrow: 'Seated_Cable_Rows/0.jpg',
+  singlerow: 'One-Arm_Dumbbell_Row/0.jpg',
+  reardelt: 'Reverse_Machine_Flyes/0.jpg',
+  facepull: 'Face_Pull/0.jpg',
+  curl: 'Dumbbell_Bicep_Curl/0.jpg',
+  hammer: 'Hammer_Curls/0.jpg',
+  squat: 'Smith_Machine_Squat/0.jpg',
+  rdl: 'Romanian_Deadlift/0.jpg',
+  legpress: 'Leg_Press/0.jpg',
+  legext: 'Leg_Extensions/0.jpg',
+  legcurl: 'Lying_Leg_Curls/0.jpg',
+  bulg: 'Bulgarian_Split_Squat/0.jpg',
+  kickback: 'Cable_Hip_Adduction/0.jpg',
+  crunch: 'Cable_Crunch/0.jpg',
+  rotation: 'Cable_Seated_Crunch/0.jpg'
+};
+function getExImage(id) {
+  var path = EX_IMAGE_MAP[id];
+  return path ? (EX_IMAGE_BASE + path) : null;
+}
+
 function getLiveTarget(exId, exName, isKg, fallbackW, fallbackR, fallbackTargetStr, fallbackLastStr) {
   var unit = isKg ? 'kg' : 'lbs';
   var increment = isKg ? 1.25 : 5;
@@ -493,6 +563,23 @@ function renderExercises(sess, isKg) {
   var el = document.getElementById('ex-list');
   el.innerHTML = '';
 
+  if (s.warmup && s.warmup.length > 0) {
+    var wu = document.createElement('div');
+    wu.className = 'warmup-card';
+    var itemsHtml = s.warmup.map(function(w){ return '<li>'+w+'</li>'; }).join('');
+    wu.innerHTML = `
+      <div class="warmup-head" onclick="toggleWarmup()">
+        <span class="warmup-icon">\ud83d\udd25</span>
+        <span class="warmup-title">Warm-up</span>
+        <span class="chevron" id="warmup-chev">\u25bc</span>
+      </div>
+      <div class="warmup-body" id="warmup-body">
+        <ul class="warmup-list">${itemsHtml}</ul>
+      </div>
+    `;
+    el.appendChild(wu);
+  }
+
   s.exercises.forEach(function(ex, i) {
     var fallbackTarget = isKg ? ex.targetKg : ex.target;
     var fallbackLast = isKg ? (ex.lastKg || '\u2014') : (ex.last || '\u2014');
@@ -523,6 +610,7 @@ function renderExercises(sess, isKg) {
         <div class="chevron" id="chev-${ex.id}">▼</div>
       </div>
       <div class="ex-body" id="body-${ex.id}">
+        <div class="ex-ref-img-wrap"><img class="ex-ref-img" src="${getExImage(ex.id) || ''}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>
         <div class="cue-box">${ex.cue}</div>
         <div class="sets-hdr">
           <div class="sets-hdr-lbl" style="text-align:center">Set</div>
@@ -545,6 +633,13 @@ function renderExercises(sess, isKg) {
     addSet(ex.id, tW, tR);
     addSet(ex.id, tW, tR);
   });
+}
+
+function toggleWarmup() {
+  var body = document.getElementById('warmup-body');
+  var chev = document.getElementById('warmup-chev');
+  body.classList.toggle('open');
+  chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
 }
 
 function toggleEx(id) {
@@ -578,6 +673,7 @@ function addSet(id, prefillW, prefillR) {
     <button class="set-log-btn" onclick="logSet('${id}',${setNum})">Log</button>
   `;
   container.appendChild(row);
+  updateExStatusCircle(id);
 }
 
 function logSet(id, setNum) {
@@ -597,11 +693,32 @@ function logSet(id, setNum) {
 
   // Update status
   var count = sessionData[id].sets.length;
-  document.getElementById('status-'+id).textContent = count + ' sets ✓';
+  document.getElementById('status-'+id).textContent = count + ' sets \u2713';
   document.getElementById('status-'+id).style.color = 'var(--legs)';
+
+  // Update number circle: amber once started, green once all visible sets logged
+  updateExStatusCircle(id);
 
   // Calculate next target
   updateNextTarget(id);
+}
+
+function updateExStatusCircle(id) {
+  var numEl = document.querySelector('#ex-card-'+id+' .ex-num');
+  if (!numEl) return;
+  var container = document.getElementById('sets-'+id);
+  var totalRows = container ? container.children.length : 0;
+  var loggedCount = sessionData[id] && sessionData[id].sets ? sessionData[id].sets.length : 0;
+
+  numEl.classList.remove('num-progress','num-complete');
+  if (loggedCount === 0) {
+    // leave original session-color class as-is
+  } else if (loggedCount >= totalRows && totalRows > 0) {
+    numEl.classList.add('num-complete');
+    numEl.textContent = '\u2713';
+  } else {
+    numEl.classList.add('num-progress');
+  }
 }
 
 // ============================================================

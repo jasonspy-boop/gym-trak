@@ -221,7 +221,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 <!-- HOME SCREEN -->
 <div id="screen-home" class="screen active">
   <div class="home-hero" id="home-hero">
-    <div class="version-tag" id="version-tag">v2.0</div>
+    <div class="version-tag" id="version-tag">v2.1</div>
     <div class="home-logo">Gym Tracker</div>
     <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
   </div>
@@ -387,6 +387,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 var currentGym = 'rivercreek';
 var currentSession = 'A';
 var sessionData = {};
+var sessionAutoCollapsed = false;
 var lastCompletedSession = null;
 var sessionHistory = [];
 function safeGet(key) {
@@ -525,6 +526,7 @@ function startSession(sess) {
   closeRestTimer();
   currentSession = sess;
   sessionData = {};
+  sessionAutoCollapsed = false;
   var gym = GYMS[currentGym];
   var s = SESSIONS[sess];
   var isKg = gym.unit === 'kg';
@@ -986,6 +988,46 @@ function updateExStatusCircle(id) {
   } else {
     numEl.classList.add('num-progress');
   }
+
+  checkAllExercisesComplete();
+}
+
+function checkAllExercisesComplete() {
+  var sess = SESSIONS[currentSession];
+  if (!sess) return;
+  var allDone = sess.exercises.every(function(ex) {
+    var container = document.getElementById('sets-'+ex.id);
+    var totalRows = container ? container.children.length : 0;
+    var loggedCount = sessionData[ex.id] && sessionData[ex.id].sets ? sessionData[ex.id].sets.length : 0;
+    return totalRows > 0 && loggedCount >= totalRows;
+  });
+
+  if (allDone && !sessionAutoCollapsed) {
+    sessionAutoCollapsed = true;
+    collapseAllExercisesAndScrollToFinish();
+  } else if (!allDone) {
+    sessionAutoCollapsed = false;
+  }
+}
+
+function collapseAllExercisesAndScrollToFinish() {
+  document.querySelectorAll('.ex-body.open').forEach(function(body) {
+    body.classList.remove('open');
+  });
+  document.querySelectorAll('.chevron').forEach(function(chev) {
+    chev.style.transform = '';
+  });
+  var wuBody = document.getElementById('warmup-body');
+  if (wuBody) wuBody.classList.remove('open');
+  var wuChev = document.getElementById('warmup-chev');
+  if (wuChev) wuChev.style.transform = '';
+
+  setTimeout(function() {
+    var finishBar = document.querySelector('.finish-bar');
+    if (finishBar) {
+      finishBar.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, 300);
 }
 
 // ============================================================

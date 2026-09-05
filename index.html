@@ -162,6 +162,8 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .set-row{display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:8px;margin-bottom:6px;align-items:center}
 .set-num{font-size:18.7px;font-weight:700;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-align:center}
 .set-input{border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:23.4px;width:100%;text-align:center;background:#fff;color:var(--text);-webkit-appearance:none}
+.set-input.suggested::placeholder{color:#b0aca0;font-weight:400;opacity:1}
+.set-input.suggested{background:#FBFAF7}
 .set-input:focus{border-color:var(--accent);outline:none}
 .set-input.logged{background:#EEF5E6;border-color:var(--legs)}
 .set-log-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px;font-size:18.7px;font-weight:600;cursor:pointer;width:100%}
@@ -219,7 +221,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 <!-- HOME SCREEN -->
 <div id="screen-home" class="screen active">
   <div class="home-hero" id="home-hero">
-    <div class="version-tag" id="version-tag">v1.8</div>
+    <div class="version-tag" id="version-tag">v2.0</div>
     <div class="home-logo">Gym Tracker</div>
     <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
   </div>
@@ -560,7 +562,11 @@ var STACK_PROFILES = {
     skull:    { type: 'stack', values: [5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80] },
     curl:     { type: 'stack', values: [5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80] },
     bulg:     { type: 'stack', values: [5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80] },
-    singlerow:{ type: 'stack', values: [5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80] }
+    singlerow:{ type: 'stack', values: [5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80] },
+    // Palladium chest press stack: 10-250 lbs in 15 lb steps (confirmed)
+    chestpress: { type: 'stack', values: [10,25,40,55,70,85,100,115,130,145,160,175,190,205,220,235,250] },
+    // Overhead press: EZ bar weight NOT included in logged total. Smallest plate increment = 2.5 lbs.
+    ohp: { type: 'stack', values: [2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50] }
   },
   hotel: {
     // Leg extension stack: 10-250 lbs in 15 lb steps (confirmed)
@@ -901,12 +907,12 @@ function addSet(id, prefillW, prefillR) {
   var row = document.createElement('div');
   row.className = 'set-row';
   row.id = 'set-'+id+'-'+setNum;
-  var wVal = (prefillW !== undefined && prefillW !== null) ? prefillW : '';
-  var rVal = (prefillR !== undefined && prefillR !== null) ? prefillR : '';
+  var wPh = (prefillW !== undefined && prefillW !== null) ? prefillW : 'wt';
+  var rPh = (prefillR !== undefined && prefillR !== null) ? prefillR : 'reps';
   row.innerHTML = `
     <div class="set-num">${setNum}</div>
-    <input class="set-input" type="number" placeholder="wt" id="w-${id}-${setNum}" inputmode="decimal" value="${wVal}">
-    <input class="set-input" type="number" placeholder="reps" id="r-${id}-${setNum}" inputmode="numeric" value="${rVal}">
+    <input class="set-input suggested" type="number" placeholder="${wPh}" id="w-${id}-${setNum}" inputmode="decimal">
+    <input class="set-input suggested" type="number" placeholder="${rPh}" id="r-${id}-${setNum}" inputmode="numeric">
     <button class="set-log-btn" onclick="logSet('${id}',${setNum})">Log</button>
   `;
   container.appendChild(row);
@@ -914,19 +920,43 @@ function addSet(id, prefillW, prefillR) {
 }
 
 function logSet(id, setNum) {
-  var w = document.getElementById('w-'+id+'-'+setNum).value;
-  var r = document.getElementById('r-'+id+'-'+setNum).value;
-  if (!w || !r) { alert('Enter weight and reps'); return; }
-  
-  document.getElementById('w-'+id+'-'+setNum).classList.add('logged');
-  document.getElementById('r-'+id+'-'+setNum).classList.add('logged');
+  var wInput = document.getElementById('w-'+id+'-'+setNum);
+  var rInput = document.getElementById('r-'+id+'-'+setNum);
+  var w = wInput.value || wInput.placeholder;
+  var r = rInput.value || rInput.placeholder;
+  var wIsNum = w && !isNaN(parseFloat(w));
+  var rIsNum = r && !isNaN(parseInt(r));
+  if (!wIsNum || !rIsNum) { alert('Enter weight and reps'); return; }
+  var wNum = parseFloat(w);
+
+  // Warn if this weight doesn't match a known stack value for this exercise/gym
+  var profile = getStackProfile(currentGym, id);
+  if (profile) {
+    var isValidStackValue = profile.values.some(function(v){ return Math.abs(v - wNum) < 0.01; });
+    if (!isValidStackValue) {
+      var nearest = profile.values.reduce(function(prev, curr){
+        return (Math.abs(curr - wNum) < Math.abs(prev - wNum)) ? curr : prev;
+      });
+      var proceed = confirm(wNum + ' isn\u2019t a weight on this machine\u2019s stack. Nearest valid value is ' + nearest + '. Log ' + wNum + ' anyway?');
+      if (!proceed) return;
+    }
+  }
+
+  wInput.value = wNum;
+  rInput.value = parseInt(r);
+  wInput.classList.add('logged');
+  rInput.classList.add('logged');
+  wInput.classList.remove('suggested');
+  rInput.classList.remove('suggested');
+  wInput.disabled = true;
+  rInput.disabled = true;
   var btn = document.querySelector('#set-'+id+'-'+setNum+' .set-log-btn');
   btn.textContent = '✓';
   btn.classList.add('done');
   btn.disabled = true;
 
   if (!sessionData[id]) sessionData[id] = { sets: [] };
-  sessionData[id].sets.push({ set: setNum, weight: parseFloat(w), reps: parseInt(r) });
+  sessionData[id].sets.push({ set: setNum, weight: wNum, reps: parseInt(r) });
 
   // Update status
   var count = sessionData[id].sets.length;
@@ -963,7 +993,7 @@ function updateExStatusCircle(id) {
 // ============================================================
 var RED_FLAG_WORDS = ['pain','hurt','sharp','injur','pull','strain','pinch','click','impinge'];
 var CAUTION_WORDS = ['shoulder','wrist','knee','elbow','joint','ache','sore','tight','niggl'];
-var HARD_WORDS = ['hard','fail','shaky','struggl','tough','grind','barely','burnout','burn out'];
+var HARD_WORDS = ['hard','fail','shaky','struggl','tough','grind','barely','burnout','burn out','weak','weaker'];
 var EASY_WORDS = ['easy','smooth','solid','comfortable','strong','effortless','felt good','felt great'];
 
 function analyzeComment(comment) {

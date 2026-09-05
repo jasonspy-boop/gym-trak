@@ -1,4 +1,4 @@
-var CACHE_NAME = 'gym-tracker-v11';
+var CACHE_NAME = 'gym-tracker-v12';
 var FILES_TO_CACHE = [
   './index.html',
   './manifest.json',

@@ -100,6 +100,8 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 
 /* SESSION SCREEN */
 .session-hdr-bar{padding:6px 16px;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#fff;position:relative;overflow:hidden;min-height:26px}
+.draft-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;background:#FBF6E9;border-bottom:1.5px solid var(--gold);font-size:13px;color:#7A6420}
+.draft-banner button{background:none;border:1.5px solid var(--gold);color:#7A6420;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
 .session-hdr-bar span{position:relative;z-index:2}
 .hdr-a{background:var(--push)}.hdr-b{background:var(--pull)}.hdr-c{background:var(--legs)}
 
@@ -221,7 +223,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 <!-- HOME SCREEN -->
 <div id="screen-home" class="screen active">
   <div class="home-hero" id="home-hero">
-    <div class="version-tag" id="version-tag">v2.1</div>
+    <div class="version-tag" id="version-tag">v2.2</div>
     <div class="home-logo">Gym Tracker</div>
     <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
   </div>
@@ -335,6 +337,10 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
     </div>
   </div>
   <div class="session-hdr-bar" id="session-hdr-bar"><span id="session-hdr-bar-text">Chest · Shoulders · Triceps</span></div>
+  <div id="draft-banner" class="draft-banner" style="display:none">
+    <span>💾 Continuing your unfinished session</span>
+    <button onclick="discardDraftAndRestart()">Start Fresh</button>
+  </div>
   <div class="ex-list" id="ex-list"></div>
   <div class="finish-bar">
     <button class="finish-btn" onclick="finishSession()">Complete Session →</button>
@@ -388,6 +394,33 @@ var currentGym = 'rivercreek';
 var currentSession = 'A';
 var sessionData = {};
 var sessionAutoCollapsed = false;
+var DRAFT_KEY = 'gym_tracker_draft';
+
+function saveDraft() {
+  var hasAnyData = Object.keys(sessionData).some(function(k){
+    return (sessionData[k].sets && sessionData[k].sets.length > 0) || (sessionData[k].comment && sessionData[k].comment.trim());
+  });
+  if (!hasAnyData) { clearDraft(); return; }
+  var draft = {
+    gym: currentGym,
+    session: currentSession,
+    data: sessionData,
+    savedAt: Date.now()
+  };
+  safeSet(DRAFT_KEY, JSON.stringify(draft));
+}
+
+function loadDraft() {
+  try {
+    var raw = safeGet(DRAFT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e) { /* ignore */ }
+}
 var lastCompletedSession = null;
 var sessionHistory = [];
 function safeGet(key) {
@@ -525,7 +558,6 @@ function goHome() {
 function startSession(sess) {
   closeRestTimer();
   currentSession = sess;
-  sessionData = {};
   sessionAutoCollapsed = false;
   var gym = GYMS[currentGym];
   var s = SESSIONS[sess];
@@ -537,8 +569,65 @@ function startSession(sess) {
   bar.className = 'session-hdr-bar hdr-' + s.color;
   document.getElementById('session-hdr-bar-text').textContent = s.sub;
 
+  var draft = loadDraft();
+  var matchingDraft = (draft && draft.gym === currentGym && draft.session === sess) ? draft : null;
+  sessionData = matchingDraft ? matchingDraft.data : {};
+
+  var banner = document.getElementById('draft-banner');
+  if (banner) banner.style.display = matchingDraft ? 'flex' : 'none';
+
   renderExercises(sess, isKg);
+  if (matchingDraft) {
+    restoreDraftIntoDOM();
+  }
   showScreen('session');
+}
+
+function discardDraftAndRestart() {
+  clearDraft();
+  startSession(currentSession);
+}
+
+function restoreDraftIntoDOM() {
+  Object.keys(sessionData).forEach(function(exId) {
+    var exData = sessionData[exId];
+    if (!exData) return;
+
+    // Restore comment text
+    var commentEl = document.getElementById('comment-' + exId);
+    if (commentEl && exData.comment) commentEl.value = exData.comment;
+
+    // Restore logged sets into their input rows, marking them as logged/disabled
+    if (exData.sets && exData.sets.length > 0) {
+      exData.sets.forEach(function(setEntry) {
+        var setNum = setEntry.set;
+        var wInput = document.getElementById('w-' + exId + '-' + setNum);
+        var rInput = document.getElementById('r-' + exId + '-' + setNum);
+        if (!wInput || !rInput) return;
+        wInput.value = setEntry.weight;
+        rInput.value = setEntry.reps;
+        wInput.classList.add('logged');
+        rInput.classList.add('logged');
+        wInput.classList.remove('suggested');
+        rInput.classList.remove('suggested');
+        wInput.disabled = true;
+        rInput.disabled = true;
+        var btn = document.querySelector('#set-' + exId + '-' + setNum + ' .set-log-btn');
+        if (btn) {
+          btn.textContent = '\u2713';
+          btn.classList.add('done');
+          btn.disabled = true;
+        }
+      });
+      var statusEl = document.getElementById('status-' + exId);
+      if (statusEl) {
+        statusEl.textContent = exData.sets.length + ' sets \u2713';
+        statusEl.style.color = 'var(--legs)';
+      }
+    }
+    updateExStatusCircle(exId);
+    if (exData.sets && exData.sets.length > 0) updateNextTarget(exId);
+  });
 }
 
 // ============================================================
@@ -901,6 +990,7 @@ function saveComment(id) {
   if (sessionData[id].sets && sessionData[id].sets.length > 0) {
     updateNextTarget(id);
   }
+  saveDraft();
 }
 
 function addSet(id, prefillW, prefillR) {
@@ -970,6 +1060,8 @@ function logSet(id, setNum) {
 
   // Calculate next target
   updateNextTarget(id);
+
+  saveDraft();
 }
 
 function updateExStatusCircle(id) {
@@ -1144,6 +1236,7 @@ function finishSession() {
   var sess = SESSIONS[currentSession];
   var date = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
   lastCompletedSession = { gym: gym, sess: sess, gymKey: currentGym, sessionKey: currentSession, date: date };
+  clearDraft();
 
   // Save to history
   var record = {

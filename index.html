@@ -205,14 +205,18 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .comment-box:focus{border-color:var(--accent);outline:none}
 
 /* FINISH BTN */
-.finish-bar{padding:16px;background:var(--bg);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:10;box-shadow:0 -4px 12px rgba(0,0,0,0.06)}
-.finish-progress-mini{font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;font-weight:500}
+.finish-bar{padding:13px 16px;background:var(--bg);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:10;box-shadow:0 -4px 12px rgba(0,0,0,0.06);display:none}
+.finish-bar.visible{display:block}
 
 .progress-bar-wrap{padding:10px 16px 8px;background:#fff;border-bottom:1px solid var(--border)}
 .progress-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .progress-bar-fill{height:100%;background:var(--legs);border-radius:3px;transition:width 0.4s ease}
 .progress-bar-label{font-size:11px;color:var(--muted);margin-top:5px;text-align:center;font-weight:500}
-.finish-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:16px;font-size:25px;font-weight:600;cursor:pointer;letter-spacing:0.02em}
+
+.finish-btn{width:100%;position:relative;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px;font-size:25px;font-weight:600;cursor:pointer;letter-spacing:0.02em;overflow:hidden}
+.finish-btn-fill{position:absolute;top:0;left:0;bottom:0;background:var(--legs);width:0%;transition:width 0.4s ease;z-index:1}
+.finish-btn-fill.full{background:var(--accent)}
+.finish-btn-label{position:relative;z-index:2}
 
 /* COMPLETE SCREEN */
 .complete-hero{background:var(--legs);padding:40px 16px;text-align:center}
@@ -243,7 +247,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 <!-- HOME SCREEN -->
 <div id="screen-home" class="screen active">
   <div class="home-hero" id="home-hero">
-    <div class="version-tag" id="version-tag">v2.5</div>
+    <div class="version-tag" id="version-tag">v2.6</div>
     <div class="home-logo">Gym Tracker</div>
     <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
   </div>
@@ -366,9 +370,11 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
     <button onclick="discardDraftAndRestart()">Start Fresh</button>
   </div>
   <div class="ex-list" id="ex-list"></div>
-  <div class="finish-bar">
-    <div class="finish-progress-mini" id="finish-progress-mini"></div>
-    <button class="finish-btn" onclick="finishSession()">Complete Session →</button>
+  <div class="finish-bar" id="finish-bar">
+    <button class="finish-btn" onclick="finishSession()">
+      <div class="finish-btn-fill" id="finish-btn-fill"></div>
+      <span class="finish-btn-label" id="finish-btn-label">Complete Session →</span>
+    </button>
   </div>
 </div>
 
@@ -1034,6 +1040,7 @@ function toggleEx(id) {
   body.classList.toggle('open');
   chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
   refreshCollapsedCompleteState(id);
+  updateFinishBarVisibility();
 }
 
 function refreshCollapsedCompleteState(id) {
@@ -1229,11 +1236,27 @@ function updateProgressBar(doneCount, totalCount) {
   var pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
   var fillEl = document.getElementById('progress-bar-fill');
   var labelEl = document.getElementById('progress-bar-label');
-  var miniEl = document.getElementById('finish-progress-mini');
   if (fillEl) fillEl.style.width = pct + '%';
   var text = doneCount + ' of ' + totalCount + ' exercises done';
   if (labelEl) labelEl.textContent = text;
-  if (miniEl) miniEl.textContent = text;
+
+  var btnFill = document.getElementById('finish-btn-fill');
+  var btnLabel = document.getElementById('finish-btn-label');
+  if (btnFill) {
+    btnFill.style.width = pct + '%';
+    btnFill.classList.toggle('full', pct >= 100);
+  }
+  if (btnLabel) {
+    btnLabel.textContent = pct >= 100 ? 'Complete Session \u2192' : 'Complete Session (' + doneCount + '/' + totalCount + ') \u2192';
+  }
+
+  updateFinishBarVisibility();
+}
+
+function updateFinishBarVisibility() {
+  var anyOpen = document.querySelectorAll('.ex-body.open').length > 0;
+  var bar = document.getElementById('finish-bar');
+  if (bar) bar.classList.toggle('visible', !anyOpen);
 }
 
 function collapseAllExercisesAndScrollToFinish() {

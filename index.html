@@ -63,6 +63,10 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 /* HISTORY DETAIL */
 .hist-detail-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
 .hist-detail-ex{font-size:19px;font-weight:700;margin-bottom:6px}
+.hist-trend{font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.hist-trend.trend-up{background:var(--legs-bg);color:#3D5228}
+.hist-trend.trend-down{background:var(--push-bg);color:#7A2E1F}
+.hist-trend.trend-same{background:#F0EDE8;color:#777}
 .hist-detail-sets{font-size:16.6px;color:var(--text);font-family:'Courier New',monospace;line-height:1.8}
 .hist-detail-comment{margin-top:8px;padding:8px 10px;background:var(--push-bg);border-left:3px solid var(--push);border-radius:4px;font-size:16px;color:#5c2e22;font-style:italic}
 
@@ -128,9 +132,12 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .ex-info{flex:1}
 .ex-name{font-size:21.8px;font-weight:600}
 .ex-target{font-size:17.2px;color:var(--muted);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:2px}
+.ex-secondary-info{transition:opacity 0.2s}
+.ex-name-badge{display:block;margin-bottom:2px}
+.ex-card.is-complete-collapsed .ex-secondary-info{display:none}
 .ex-flag-badge{font-size:13px;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:4px;display:inline-block;vertical-align:middle}
-.ex-flag-badge.flag-red{background:#F5D9D4;color:#6B1F14}
-.ex-flag-badge.flag-caution{background:var(--push-bg);color:#7A2E1F}
+.ex-flag-badge.flag-red{background:#EFC4BB;color:#5A190D;border:1.5px solid #C94828;font-weight:700}
+.ex-flag-badge.flag-caution{background:#F0D4A8;color:#5C3D0A;border:1.5px solid #C9A227;font-weight:700}
 .ex-last{font-size:15.6px;color:#b0aca4;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-top:2px}
 .ex-status{font-size:17.2px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;flex-shrink:0}
 .ex-done{color:var(--legs)}
@@ -139,10 +146,17 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .ex-body{display:none;border-top:1px solid var(--border);padding:12px;background:#FAFAF8}
 .ex-body.open{display:block}
 
-.ex-ref-img-wrap{width:100%;height:120px;border-radius:8px;overflow:hidden;margin-bottom:10px;background:#EDEAE0;position:relative}
+.ex-ref-img-wrap{width:100%;height:120px;border-radius:8px;overflow:hidden;margin-bottom:10px;background:#EDEAE0;position:relative;border:2px solid var(--border)}
+.ex-ref-img-wrap.accent-a{border-color:var(--push)}
+.ex-ref-img-wrap.accent-b{border-color:var(--pull)}
+.ex-ref-img-wrap.accent-c{border-color:var(--legs)}
 .ex-ref-img{width:100%;height:100%;object-fit:cover;opacity:0.4;filter:grayscale(30%)}
 .rest-timer-btn{width:100%;background:var(--gold);color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:14px;letter-spacing:0.01em}
 .rest-timer-btn.running{background:#8C7A3E}
+
+.undo-toast{position:fixed;bottom:90px;left:16px;right:16px;background:#211F1A;color:#fff;border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;z-index:150;font-size:14px;transform:translateY(120px);opacity:0;transition:all 0.25s ease;pointer-events:none}
+.undo-toast.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.undo-toast-btn{background:none;border:none;color:var(--gold);font-weight:700;font-size:14px;cursor:pointer;padding:4px 8px}
 
 .timer-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(33,31,26,0.92);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column;padding:24px}
 .timer-overlay.show{display:flex}
@@ -191,7 +205,13 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .comment-box:focus{border-color:var(--accent);outline:none}
 
 /* FINISH BTN */
-.finish-bar{padding:16px;background:var(--bg);border-top:1px solid var(--border)}
+.finish-bar{padding:16px;background:var(--bg);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:10;box-shadow:0 -4px 12px rgba(0,0,0,0.06)}
+.finish-progress-mini{font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;font-weight:500}
+
+.progress-bar-wrap{padding:10px 16px 8px;background:#fff;border-bottom:1px solid var(--border)}
+.progress-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--legs);border-radius:3px;transition:width 0.4s ease}
+.progress-bar-label{font-size:11px;color:var(--muted);margin-top:5px;text-align:center;font-weight:500}
 .finish-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:16px;font-size:25px;font-weight:600;cursor:pointer;letter-spacing:0.02em}
 
 /* COMPLETE SCREEN */
@@ -223,7 +243,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 <!-- HOME SCREEN -->
 <div id="screen-home" class="screen active">
   <div class="home-hero" id="home-hero">
-    <div class="version-tag" id="version-tag">v2.2</div>
+    <div class="version-tag" id="version-tag">v2.5</div>
     <div class="home-logo">Gym Tracker</div>
     <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
   </div>
@@ -337,12 +357,17 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
     </div>
   </div>
   <div class="session-hdr-bar" id="session-hdr-bar"><span id="session-hdr-bar-text">Chest · Shoulders · Triceps</span></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar-fill" style="width:0%"></div></div>
+    <div class="progress-bar-label" id="progress-bar-label">0 of 8 exercises done</div>
+  </div>
   <div id="draft-banner" class="draft-banner" style="display:none">
     <span>💾 Continuing your unfinished session</span>
     <button onclick="discardDraftAndRestart()">Start Fresh</button>
   </div>
   <div class="ex-list" id="ex-list"></div>
   <div class="finish-bar">
+    <div class="finish-progress-mini" id="finish-progress-mini"></div>
     <button class="finish-btn" onclick="finishSession()">Complete Session →</button>
   </div>
 </div>
@@ -365,6 +390,12 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
     <button class="copy-btn" id="copy-btn" onclick="copyResults()">📋 Copy Results to Paste in Chat</button>
     <button class="home-btn" onclick="goHome()">← Back to Home</button>
   </div>
+</div>
+
+<!-- UNDO TOAST -->
+<div id="undo-toast" class="undo-toast">
+  <span>Set logged</span>
+  <button class="undo-toast-btn" onclick="">Undo</button>
 </div>
 
 <!-- REST TIMER OVERLAY -->
@@ -580,6 +611,7 @@ function startSession(sess) {
   if (matchingDraft) {
     restoreDraftIntoDOM();
   }
+  checkAllExercisesComplete();
   showScreen('session');
 }
 
@@ -838,16 +870,19 @@ function renderExercises(sess, isKg) {
       <div class="ex-head" onclick="toggleEx('${ex.id}')">
         <div class="ex-num ${numClass}">${i+1}</div>
         <div class="ex-info">
-          <div class="ex-name">${ex.name} ${flagBadge}</div>
-          <div class="ex-target">${target}</div>
-          <div class="ex-last">last: ${last}</div>
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-secondary-info" id="secondary-${ex.id}">
+            ${flagBadge ? '<span class="ex-name-badge">'+flagBadge+'</span>' : ''}
+            <div class="ex-target">${target}</div>
+            <div class="ex-last">last: ${last}</div>
+          </div>
         </div>
         <div class="ex-status" id="status-${ex.id}"></div>
         <div class="chevron" id="chev-${ex.id}">▼</div>
       </div>
       <div class="ex-body" id="body-${ex.id}">
         <div class="cue-box">${ex.cue}</div>
-        <div class="ex-ref-img-wrap"><img class="ex-ref-img" src="${getExImage(ex.id) || ''}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>
+        <div class="ex-ref-img-wrap accent-${s.color}"><img class="ex-ref-img" src="${getExImage(ex.id) || ''}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>
         <button class="rest-timer-btn" id="timerbtn-${ex.id}" onclick="startRestTimer('${ex.id}', ${ex.restSec || 90})">⏱ Rest Timer \u2014 ${ex.restSec ? Math.floor(ex.restSec/60) + ':' + String(ex.restSec%60).padStart(2,'0') : '1:30'}</button>
         <div class="sets-hdr">
           <div class="sets-hdr-lbl" style="text-align:center">Set</div>
@@ -865,7 +900,15 @@ function renderExercises(sess, isKg) {
     el.appendChild(card);
     var tW = live.tW;
     var tR = live.tR;
-    sessionData[ex.id] = { sets: [], name: ex.name, target: target, tW: tW, tR: tR };
+    if (!sessionData[ex.id]) {
+      sessionData[ex.id] = { sets: [], name: ex.name, target: target, tW: tW, tR: tR };
+    } else {
+      sessionData[ex.id].name = ex.name;
+      sessionData[ex.id].target = target;
+      sessionData[ex.id].tW = tW;
+      sessionData[ex.id].tR = tR;
+      if (!sessionData[ex.id].sets) sessionData[ex.id].sets = [];
+    }
     addSet(ex.id, tW, tR);
     addSet(ex.id, tW, tR);
     addSet(ex.id, tW, tR);
@@ -921,7 +964,16 @@ function renderTimerTick() {
   var frac = timerState.remainingSec / timerState.totalSec;
   frac = Math.max(0, Math.min(1, frac));
   var offset = timerState.ringCircumference * (1 - frac);
-  document.getElementById('timer-ring-fg').style.strokeDashoffset = offset;
+  var ring = document.getElementById('timer-ring-fg');
+  ring.style.strokeDashoffset = offset;
+
+  if (timerState.remainingSec <= 5) {
+    ring.style.stroke = '#C94828';
+  } else if (timerState.remainingSec <= 10) {
+    ring.style.stroke = '#C9A227';
+  } else {
+    ring.style.stroke = '';
+  }
 }
 
 function adjustTimer(deltaSec) {
@@ -981,6 +1033,19 @@ function toggleEx(id) {
   var chev = document.getElementById('chev-'+id);
   body.classList.toggle('open');
   chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+  refreshCollapsedCompleteState(id);
+}
+
+function refreshCollapsedCompleteState(id) {
+  var card = document.getElementById('ex-card-' + id);
+  var body = document.getElementById('body-' + id);
+  if (!card || !body) return;
+  var container = document.getElementById('sets-' + id);
+  var totalRows = container ? container.children.length : 0;
+  var loggedCount = sessionData[id] && sessionData[id].sets ? sessionData[id].sets.length : 0;
+  var isComplete = totalRows > 0 && loggedCount >= totalRows;
+  var isCollapsed = !body.classList.contains('open');
+  card.classList.toggle('is-complete-collapsed', isComplete && isCollapsed);
 }
 
 function saveComment(id) {
@@ -1062,6 +1127,57 @@ function logSet(id, setNum) {
   updateNextTarget(id);
 
   saveDraft();
+  showUndoToast(id, setNum);
+}
+
+function undoLogSet(id, setNum) {
+  var wInput = document.getElementById('w-'+id+'-'+setNum);
+  var rInput = document.getElementById('r-'+id+'-'+setNum);
+  if (!wInput || !rInput) return;
+
+  wInput.disabled = false;
+  rInput.disabled = false;
+  wInput.classList.remove('logged');
+  rInput.classList.remove('logged');
+  wInput.classList.add('suggested');
+  rInput.classList.add('suggested');
+  wInput.value = '';
+  rInput.value = '';
+
+  var btn = document.querySelector('#set-'+id+'-'+setNum+' .set-log-btn');
+  if (btn) {
+    btn.textContent = 'Log';
+    btn.classList.remove('done');
+    btn.disabled = false;
+  }
+
+  if (sessionData[id] && sessionData[id].sets) {
+    sessionData[id].sets = sessionData[id].sets.filter(function(s){ return s.set !== setNum; });
+    var count = sessionData[id].sets.length;
+    var statusEl = document.getElementById('status-'+id);
+    if (statusEl) {
+      statusEl.textContent = count > 0 ? (count + ' sets \u2713') : '';
+    }
+  }
+
+  updateExStatusCircle(id);
+  saveDraft();
+  hideUndoToast();
+}
+
+var undoToastTimeout = null;
+function showUndoToast(id, setNum) {
+  var toast = document.getElementById('undo-toast');
+  if (!toast) return;
+  clearTimeout(undoToastTimeout);
+  toast.querySelector('.undo-toast-btn').setAttribute('onclick', "undoLogSet('" + id + "'," + setNum + ")");
+  toast.classList.add('show');
+  undoToastTimeout = setTimeout(hideUndoToast, 3000);
+}
+function hideUndoToast() {
+  var toast = document.getElementById('undo-toast');
+  if (toast) toast.classList.remove('show');
+  clearTimeout(undoToastTimeout);
 }
 
 function updateExStatusCircle(id) {
@@ -1081,18 +1197,25 @@ function updateExStatusCircle(id) {
     numEl.classList.add('num-progress');
   }
 
+  refreshCollapsedCompleteState(id);
   checkAllExercisesComplete();
 }
 
 function checkAllExercisesComplete() {
   var sess = SESSIONS[currentSession];
   if (!sess) return;
+
+  var doneCount = 0;
   var allDone = sess.exercises.every(function(ex) {
     var container = document.getElementById('sets-'+ex.id);
     var totalRows = container ? container.children.length : 0;
     var loggedCount = sessionData[ex.id] && sessionData[ex.id].sets ? sessionData[ex.id].sets.length : 0;
-    return totalRows > 0 && loggedCount >= totalRows;
+    var exDone = totalRows > 0 && loggedCount >= totalRows;
+    if (exDone) doneCount++;
+    return exDone;
   });
+
+  updateProgressBar(doneCount, sess.exercises.length);
 
   if (allDone && !sessionAutoCollapsed) {
     sessionAutoCollapsed = true;
@@ -1100,6 +1223,17 @@ function checkAllExercisesComplete() {
   } else if (!allDone) {
     sessionAutoCollapsed = false;
   }
+}
+
+function updateProgressBar(doneCount, totalCount) {
+  var pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  var fillEl = document.getElementById('progress-bar-fill');
+  var labelEl = document.getElementById('progress-bar-label');
+  var miniEl = document.getElementById('finish-progress-mini');
+  if (fillEl) fillEl.style.width = pct + '%';
+  var text = doneCount + ' of ' + totalCount + ' exercises done';
+  if (labelEl) labelEl.textContent = text;
+  if (miniEl) miniEl.textContent = text;
 }
 
 function collapseAllExercisesAndScrollToFinish() {
@@ -1113,6 +1247,11 @@ function collapseAllExercisesAndScrollToFinish() {
   if (wuBody) wuBody.classList.remove('open');
   var wuChev = document.getElementById('warmup-chev');
   if (wuChev) wuChev.style.transform = '';
+
+  var sess = SESSIONS[currentSession];
+  if (sess) {
+    sess.exercises.forEach(function(ex) { refreshCollapsedCompleteState(ex.id); });
+  }
 
   setTimeout(function() {
     var finishBar = document.querySelector('.finish-bar');
@@ -1751,10 +1890,31 @@ function openHistoryDetail(idx) {
 
     var exName = d.name || exId;
     var setsText = validSets.map(function(st){ return st.weight+unit+'\u00d7'+st.reps; }).join(' \u00b7 ');
+    var thisLastW = validSets[validSets.length-1].weight;
+
+    // Find the previous session (older, same gym) that logged this exercise, for a trend comparison
+    var trendHtml = '';
+    for (var j = idx + 1; j < sessionHistory.length; j++) {
+      var prevRec = sessionHistory[j];
+      if (prevRec.gym !== h.gym) continue;
+      var prevD = prevRec.data && prevRec.data[exId];
+      if (!prevD || !prevD.sets || prevD.sets.length === 0) continue;
+      var prevValid = prevD.sets.filter(function(st){ return !isNaN(st.weight) && !isNaN(st.reps); });
+      if (prevValid.length === 0) continue;
+      var prevLastW = prevValid[prevValid.length-1].weight;
+      if (thisLastW > prevLastW) {
+        trendHtml = '<span class="hist-trend trend-up">\u2191 up from ' + prevLastW + unit + '</span>';
+      } else if (thisLastW < prevLastW) {
+        trendHtml = '<span class="hist-trend trend-down">\u2193 down from ' + prevLastW + unit + '</span>';
+      } else {
+        trendHtml = '<span class="hist-trend trend-same">\u2192 same as last time</span>';
+      }
+      break;
+    }
 
     var card = document.createElement('div');
     card.className = 'hist-detail-card';
-    var html = '<div class="hist-detail-ex">'+exName+'</div><div class="hist-detail-sets">'+setsText+'</div>';
+    var html = '<div class="hist-detail-ex">'+exName+' ' + trendHtml + '</div><div class="hist-detail-sets">'+setsText+'</div>';
     if (d.comment && d.comment.trim()) {
       html += '<div class="hist-detail-comment">\ud83d\udcac ' + d.comment.trim() + '</div>';
     }

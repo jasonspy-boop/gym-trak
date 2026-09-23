@@ -244,7 +244,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 <!-- HOME SCREEN -->
 <div id="screen-home" class="screen active">
   <div class="home-hero" id="home-hero">
-    <div class="version-tag" id="version-tag">v2.7</div>
+    <div class="version-tag" id="version-tag">v2.8</div>
     <div class="home-logo">Gym Tracker</div>
     <div class="home-tagline">Push · Pull · Legs · Hypertrophy</div>
   </div>
@@ -490,7 +490,7 @@ var SESSIONS = {
     exercises: [
       { id:'bench', name:'Smith bench press', target:'105 lbs \u00d7 3\u00d78', last:'100 lbs \u00d7 8,10,8', cue:'5\u201310\u00b0 incline \u00b7 retract scapula \u00b7 elbows 45\u201360\u00b0 \u00b7 drive bar \u00b7 rest 2\u20133 min', targetKg:'25 kg ea (67 kg) \u00d7 4\u00d78', lastKg:'22.5 kg ea \u00d7 4\u00d78 (7,8 hard)', tW:105, tR:8, tWkg:25, tRkg:8, restSec:150 },
       { id:'incline', name:'Incline DB press', target:'30 lbs ea \u00d7 3\u00d712', last:'30 lbs \u00d7 10,10,12 (last shaky)', cue:'30\u201345\u00b0 \u00b7 3-sec eccentric \u00b7 elbows slightly flared \u00b7 neutral wrist', targetKg:'21.5 kg ea \u00d7 3\u00d710', lastKg:'20.5 kg ea \u00d7 3\u00d710', tW:30, tR:12, tWkg:21.5, tRkg:10, restSec:90 },
-      { id:'chestpress', name:'Palladium chest press', target:'95 lbs \u00d7 3\u00d710', last:'90 lbs \u00d7 3\u00d710', cue:'Seat 4\u20135 \u00b7 full range \u00b7 squeeze at top \u00b7 controlled return', targetKg:'Smith press \u2014 est. baseline', lastKg:'\u2014', tW:95, tR:10, tWkg:null, tRkg:null, restSec:120 },
+      { id:'chestpress', name:'Palladium chest press', nameKg:'Smith machine chest press', target:'95 lbs \u00d7 3\u00d710', last:'90 lbs \u00d7 3\u00d710', cue:'Seat 4\u20135 \u00b7 full range \u00b7 squeeze at top \u00b7 controlled return', targetKg:'Smith press \u2014 est. baseline', lastKg:'\u2014', tW:95, tR:10, tWkg:null, tRkg:null, restSec:120 },
       { id:'fly', name:'Cable pec fly', target:'18 lbs \u00d7 3\u00d710', last:'14\u00d712, 14\u00d712, 18\u00d712 (hard)', cue:'Mid cable \u00b7 slight bend in elbows \u00b7 squeeze at centre \u00b7 slow arc \u00b7 stop if shoulder >2/10', targetKg:'3 plates \u00d7 3\u00d712', lastKg:'3 plates \u00d7 3\u00d710 (hard 7\u201310)', tW:18, tR:10, tWkg:3, tRkg:12, restSec:75 },
       { id:'ohp', name:'Overhead press', target:'Bar + 25 lbs ea \u00d7 3\u00d710', last:'bar+20\u00d710, bar+25\u00d710\u00d72', cue:'Brace core \u00b7 bar path straight up \u00b7 lock out at top \u00b7 monitor shoulder', targetKg:'Bar + 2.5 kg ea (25 kg) \u00d7 3\u00d78', lastKg:'25 kg \u00d7 3\u00d78 (3.75 ea too heavy)', tW:25, tR:10, tWkg:25, tRkg:8, restSec:150 },
       { id:'lateral', name:'Cable lateral raise', target:'12 lbs \u00d7 3\u00d712', last:'12 lbs \u00d7 3\u00d710', cue:'Slight forward lean \u00b7 elbow leads \u00b7 don\'t shrug \u00b7 stop if shoulder pain', targetKg:'7.5 kg \u00d7 3\u00d712', lastKg:'7.5 kg \u00d7 3\u00d710 (10 kg too hard)', tW:12, tR:12, tWkg:7.5, tRkg:12, restSec:60 },
@@ -849,12 +849,13 @@ function renderExercises(sess, isKg) {
   }
 
   s.exercises.forEach(function(ex, i) {
+    var exDisplayName = (isKg && ex.nameKg) ? ex.nameKg : ex.name;
     var fallbackTarget = isKg ? ex.targetKg : ex.target;
     var fallbackLast = isKg ? (ex.lastKg || '\u2014') : (ex.last || '\u2014');
     var fallbackW = isKg ? ex.tWkg : ex.tW;
     var fallbackR = isKg ? ex.tRkg : ex.tR;
 
-    var live = getLiveTarget(ex.id, ex.name, isKg, fallbackW, fallbackR, fallbackTarget, fallbackLast);
+    var live = getLiveTarget(ex.id, exDisplayName, isKg, fallbackW, fallbackR, fallbackTarget, fallbackLast);
     var target = live.target;
     var last = live.last;
 
@@ -870,7 +871,7 @@ function renderExercises(sess, isKg) {
       <div class="ex-head" onclick="toggleEx('${ex.id}')">
         <div class="ex-num ${numClass}">${i+1}</div>
         <div class="ex-info">
-          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name">${exDisplayName}</div>
           <div class="ex-secondary-info" id="secondary-${ex.id}">
             ${flagBadge ? '<span class="ex-name-badge">'+flagBadge+'</span>' : ''}
             <div class="ex-target">${target}</div>
@@ -901,9 +902,9 @@ function renderExercises(sess, isKg) {
     var tW = live.tW;
     var tR = live.tR;
     if (!sessionData[ex.id]) {
-      sessionData[ex.id] = { sets: [], name: ex.name, target: target, tW: tW, tR: tR };
+      sessionData[ex.id] = { sets: [], name: exDisplayName, target: target, tW: tW, tR: tR };
     } else {
-      sessionData[ex.id].name = ex.name;
+      sessionData[ex.id].name = exDisplayName;
       sessionData[ex.id].target = target;
       sessionData[ex.id].tW = tW;
       sessionData[ex.id].tR = tR;
@@ -1421,7 +1422,7 @@ function finishSession() {
     var card = document.createElement('div');
     card.className = 'summary-card';
     var setsText = validSets.map(function(st){ return st.weight+unit+'\u00d7'+st.reps; }).join(' \u00b7 ');
-    card.innerHTML = '<div class="summary-ex">'+ex.name+'</div><div class="summary-sets">'+setsText+'</div>';
+    card.innerHTML = '<div class="summary-ex">'+d.name+'</div><div class="summary-sets">'+setsText+'</div>';
     summaryEl.appendChild(card);
 
     // Next target — uses same judgment engine as live view
@@ -1482,7 +1483,7 @@ function finishSession() {
 
     var row = document.createElement('div');
     row.className = rowClass;
-    row.innerHTML = '<div class="next-ex-name">'+ex.name+'</div><div class="next-ex-target">'+action+'</div>';
+    row.innerHTML = '<div class="next-ex-name">'+d.name+'</div><div class="next-ex-target">'+action+'</div>';
     nextEl.appendChild(row);
   });
 
@@ -1518,7 +1519,7 @@ function copyResults() {
     if (validSets.length === 0) return;
 
     var setsText = validSets.map(function(st){ return st.weight+unit+'\u00d7'+st.reps; }).join(', ');
-    var line = (i+1) + ' ' + ex.name + ': ' + setsText;
+    var line = (i+1) + ' ' + d.name + ': ' + setsText;
     if (d.comment && d.comment.trim()) {
       line += ' \u2014 ' + d.comment.trim();
     }
@@ -1579,6 +1580,10 @@ function buildExNameLookup() {
       // also map common short forms
       var short = ex.name.split(' ')[0] + ex.name.split(' ')[1];
       map[normalizeExName(short)] = map[normalizeExName(short)] || { sessionKey: sk, exId: ex.id, exName: ex.name };
+      // also register the gym-specific alias name, if this exercise has one
+      if (ex.nameKg) {
+        map[normalizeExName(ex.nameKg)] = { sessionKey: sk, exId: ex.id, exName: ex.nameKg };
+      }
     });
   });
   return map;
